@@ -2,11 +2,14 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useState, useEffect } from "react";
 
 export default function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
+  const [activeSection, setActiveSection] = useState<string>("home");
+  const pathname = usePathname();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -15,6 +18,30 @@ export default function Navbar() {
 
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  useEffect(() => {
+    const sections = document.querySelectorAll("section[id]");
+    
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            setActiveSection(entry.target.id);
+          }
+        });
+      },
+      {
+        rootMargin: "-20% 0px -60% 0px",
+        threshold: 0,
+      }
+    );
+
+    sections.forEach((section) => observer.observe(section));
+
+    return () => {
+      sections.forEach((section) => observer.unobserve(section));
+    };
   }, []);
 
   const navLinks = [
@@ -106,15 +133,30 @@ export default function Navbar() {
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-8">
-            {navLinks.map((link) => (
-              <Link
-                key={link.name}
-                href={link.href}
-                className="text-white hover:text-orange transition-colors duration-200 font-medium"
-              >
-                {link.name}
-              </Link>
-            ))}
+            {navLinks.map((link) => {
+              // Check if it's a route link or hash link
+              const isRouteLink = link.href.startsWith("/");
+              const isActive = isRouteLink 
+                ? pathname === link.href 
+                : activeSection === link.href.slice(1);
+              
+              return (
+                <Link
+                  key={link.name}
+                  href={link.href}
+                  className={`text-white hover:text-orange transition-all duration-200 font-medium relative group ${
+                    isActive ? "text-orange" : ""
+                  }`}
+                >
+                  {link.name}
+                  <span
+                    className={`absolute -bottom-1 left-0 h-0.5 bg-orange transition-all duration-300 ${
+                      isActive ? "w-full" : "w-0 group-hover:w-full"
+                    }`}
+                  ></span>
+                </Link>
+              );
+            })}
             <Link
               href="#contact"
               className="bg-orange hover:bg-orange/90 text-white font-bold py-2 px-6 rounded-lg transition-colors duration-200"
@@ -159,16 +201,28 @@ export default function Navbar() {
       {mobileMenuOpen && (
         <div className="md:hidden bg-navy/95 backdrop-blur-sm border-t border-orange/20">
           <div className="px-2 pt-2 pb-3 space-y-1">
-            {navLinks.map((link) => (
-              <Link
-                key={link.name}
-                href={link.href}
-                onClick={() => setMobileMenuOpen(false)}
-                className="block px-3 py-2 rounded-md text-white hover:bg-orange/10 hover:text-orange transition-colors duration-200 font-medium"
-              >
-                {link.name}
-              </Link>
-            ))}
+            {navLinks.map((link) => {
+              // Check if it's a route link or hash link
+              const isRouteLink = link.href.startsWith("/");
+              const isActive = isRouteLink 
+                ? pathname === link.href 
+                : activeSection === link.href.slice(1);
+              
+              return (
+                <Link
+                  key={link.name}
+                  href={link.href}
+                  onClick={() => setMobileMenuOpen(false)}
+                  className={`block px-3 py-2 rounded-md text-white hover:bg-orange/10 hover:text-orange transition-colors duration-200 font-medium border-l-4 ${
+                    isActive
+                      ? "border-orange text-orange bg-orange/10"
+                      : "border-transparent"
+                  }`}
+                >
+                  {link.name}
+                </Link>
+              );
+            })}
             <Link
               href="#contact"
               onClick={() => setMobileMenuOpen(false)}
