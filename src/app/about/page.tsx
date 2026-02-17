@@ -1,4 +1,23 @@
 import Link from "next/link";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "About Us",
+  description: "Learn about Junk Captain LLC, the Triangle area's trusted junk removal service since 2020. We've helped thousands of customers with fast, eco-friendly junk removal in Raleigh, Cary, Apex, Durham, and Fuquay Varina.",
+  keywords: [
+    "about junk captain",
+    "junk removal company Raleigh",
+    "professional junk removal Triangle NC",
+    "eco-friendly junk removal",
+    "licensed junk removal service",
+    "same day junk removal Raleigh"
+  ],
+  openGraph: {
+    title: "About Junk Captain LLC | Professional Junk Removal in Triangle NC",
+    description: "Trusted junk removal service serving the Triangle area since 2020. Licensed, insured, and eco-friendly. Call (919) 924-8463!",
+    type: "website",
+  },
+};
 
 export default function AboutPage() {
   return (
