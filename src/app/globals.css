@@ -16,8 +16,8 @@
   --color-orange: var(--orange);
   --color-red: var(--red);
   --color-teal: var(--teal);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-sans: var(--font-inter);
+  --font-heading: var(--font-poppins);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -30,5 +30,16 @@
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-inter), system-ui, -apple-system, sans-serif;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-poppins), sans-serif;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+button, .btn {
+  font-family: var(--font-poppins), sans-serif;
+  font-weight: 600;
 }
