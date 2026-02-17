@@ -53,9 +53,9 @@ export default function Navbar() {
 
   return (
     <>
-      {/* Top Bar - Only visible at top of page */}
+      {/* Top Bar - Only visible at top of page on desktop */}
       <div
-        className={`bg-teal text-white fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
+        className={`hidden md:block bg-teal text-white fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
           isScrolled ? "-translate-y-full opacity-0" : "translate-y-0 opacity-100"
         }`}
       >
@@ -113,7 +113,7 @@ export default function Navbar() {
         className={`text-white fixed left-0 right-0 z-40 transition-all duration-300 ${
           isScrolled
             ? "top-0 bg-navy/90 shadow-lg backdrop-blur-sm"
-            : "top-10 bg-transparent"
+            : "top-0 md:top-10 bg-transparent md:bg-transparent bg-navy/90"
         }`}
       >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
