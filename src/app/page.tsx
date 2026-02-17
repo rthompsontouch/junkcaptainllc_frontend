@@ -1,6 +1,6 @@
 import Hero from "@/components/Hero";
 import Services from "@/components/Services";
-import Pricing from "@/components/Pricing";
+import QuoteCTA from "@/components/QuoteCTA";
 import FAQ from "@/components/FAQ";
 
 export default function Home() {
@@ -12,8 +12,8 @@ export default function Home() {
       {/* Services Section */}
       <Services />
 
-      {/* Pricing Section */}
-      <Pricing />
+      {/* Get Quote Section */}
+      <QuoteCTA />
 
       {/* FAQ Section */}
       <FAQ />
