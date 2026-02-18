@@ -10,8 +10,8 @@ function toApiNotification(
   doc: { _id: mongoose.Types.ObjectId; customerId: mongoose.Types.ObjectId; [key: string]: unknown }
 ) {
   const obj =
-    "toObject" in doc && typeof (doc as { toObject: () => Record<string, unknown> }).toObject === "function"
-      ? (doc as { toObject: () => Record<string, unknown> }).toObject()
+    "toObject" in doc && typeof (doc as unknown as { toObject: () => Record<string, unknown> }).toObject === "function"
+      ? (doc as unknown as { toObject: () => Record<string, unknown> }).toObject()
       : doc;
   return {
     id: (obj._id as mongoose.Types.ObjectId).toString(),
