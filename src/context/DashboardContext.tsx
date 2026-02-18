@@ -60,14 +60,14 @@ interface DashboardContextType extends DashboardState {
   fetchCustomers: () => Promise<void>;
   createCustomer: (data: Partial<PotentialCustomer>) => Promise<void>;
   updateCustomer: (
-    id: number,
+    id: string | number,
     data: Partial<Customer>,
     type: "potential" | "active"
   ) => Promise<void>;
-  deleteCustomer: (id: number, type: "potential" | "active") => Promise<void>;
-  convertToCustomer: (id: number) => Promise<void>;
+  deleteCustomer: (id: string | number, type: "potential" | "active") => Promise<void>;
+  convertToCustomer: (id: string | number) => Promise<void>;
   fetchNotifications: () => Promise<void>;
-  markNotificationRead: (id: number) => Promise<void>;
+  markNotificationRead: (id: string | number) => Promise<void>;
 }
 
 const DashboardContext = createContext<DashboardContextType | undefined>(undefined);
@@ -225,7 +225,7 @@ export const DashboardProvider = ({ children }: DashboardProviderProps) => {
   };
 
   const updateCustomer = async (
-    id: number,
+    id: string | number,
     data: Partial<Customer>,
     type: "potential" | "active"
   ) => {
@@ -257,7 +257,7 @@ export const DashboardProvider = ({ children }: DashboardProviderProps) => {
     }
   };
 
-  const deleteCustomer = async (id: number, type: "potential" | "active") => {
+  const deleteCustomer = async (id: string | number, type: "potential" | "active") => {
     if (!token) throw new Error("Not authenticated");
 
     try {
@@ -286,7 +286,7 @@ export const DashboardProvider = ({ children }: DashboardProviderProps) => {
     }
   };
 
-  const convertToCustomer = async (id: number) => {
+  const convertToCustomer = async (id: string | number) => {
     if (!token) throw new Error("Not authenticated");
 
     try {
@@ -315,7 +315,7 @@ export const DashboardProvider = ({ children }: DashboardProviderProps) => {
     }
   };
 
-  const markNotificationRead = async (id: number) => {
+  const markNotificationRead = async (id: string | number) => {
     if (!token) throw new Error("Not authenticated");
 
     try {
