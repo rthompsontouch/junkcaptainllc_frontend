@@ -46,7 +46,7 @@ export default function Navbar() {
 
   const navLinks = [
     { name: "Services", href: "#services" },
-    { name: "Get Quote", href: "#quote" },
+    { name: "Pricing", href: "#quote" },
     { name: "FAQ", href: "#faq" },
     { name: "About", href: "/about" },
   ];
@@ -158,7 +158,7 @@ export default function Navbar() {
               );
             })}
             <Link
-              href="#contact"
+              href="#home"
               className="bg-orange hover:bg-orange/90 text-white font-bold py-2 px-6 rounded-lg transition-colors duration-200"
             >
               Request Quote
@@ -224,7 +224,7 @@ export default function Navbar() {
               );
             })}
             <Link
-              href="#contact"
+              href="#home"
               onClick={() => setMobileMenuOpen(false)}
               className="block mx-3 my-2 bg-orange hover:bg-orange/90 text-white font-bold py-2 px-6 rounded-lg transition-colors duration-200 text-center"
             >

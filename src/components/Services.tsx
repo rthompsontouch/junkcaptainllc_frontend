@@ -57,7 +57,7 @@ export default function Services() {
                 Don&apos;t see what you&apos;re looking for? We handle almost anything!
               </p>
               <a
-                href="#contact"
+                href="#home"
                 className="inline-block bg-orange hover:bg-orange/90 text-white font-bold py-4 px-8 rounded-lg text-lg transition-colors shadow-lg hover:shadow-xl"
               >
                 Get Your Free Quote

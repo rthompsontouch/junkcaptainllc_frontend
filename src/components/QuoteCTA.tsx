@@ -112,12 +112,12 @@ export default function QuoteCTA() {
         <div className="text-center">
           <h3 className="text-3xl font-bold text-white mb-8">Ready to Get Your Free Quote?</h3>
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-            <Link
-              href="/#contact"
-              className="bg-orange hover:bg-orange/90 text-white font-bold py-5 px-10 rounded-lg transition-colors duration-200 shadow-xl hover:shadow-2xl text-lg"
+            <a
+              href="#home"
+              className="bg-orange hover:bg-orange/90 text-white font-bold py-5 px-10 rounded-lg transition-colors duration-200 shadow-xl hover:shadow-2xl text-lg inline-block"
             >
               📸 Upload Photos & Get Quote
-            </Link>
+            </a>
             <Link
               href="tel:919-924-8463"
               className="bg-white hover:bg-gray-100 text-navy font-bold py-5 px-10 rounded-lg transition-colors duration-200 shadow-xl hover:shadow-2xl text-lg"

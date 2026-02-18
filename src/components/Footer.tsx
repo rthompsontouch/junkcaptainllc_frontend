@@ -42,7 +42,7 @@ export default function Footer() {
               </li>
               <li>
                 <Link href="#quote" className="text-gray-300 hover:text-orange transition-colors">
-                  Get Quote
+                  Pricing
                 </Link>
               </li>
               <li>

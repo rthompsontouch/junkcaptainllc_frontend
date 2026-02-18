@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 
 export const metadata: Metadata = {
   title: "About Us",
-  description: "Learn about Junk Captain LLC, the Triangle area's trusted junk removal service since 2020. We've helped thousands of customers with fast, eco-friendly junk removal in Raleigh, Cary, Apex, Durham, and Fuquay Varina.",
+  description: "Learn about Junk Captain LLC, the Triangle area's trusted junk removal service since 2026. Over a decade of combined experience. Fair, transparent pricing with no hidden fees. Raleigh, Cary, Apex, Durham, and Fuquay Varina.",
   keywords: [
     "about junk captain",
     "junk removal company Raleigh",
@@ -14,7 +14,7 @@ export const metadata: Metadata = {
   ],
   openGraph: {
     title: "About Junk Captain LLC | Professional Junk Removal in Triangle NC",
-    description: "Trusted junk removal service serving the Triangle area since 2020. Licensed, insured, and eco-friendly. Call (919) 924-8463!",
+    description: "Trusted junk removal service serving the Triangle area since 2026. Transparent pricing, no hidden fees. Licensed, insured, and eco-friendly. Call (919) 924-8463!",
     type: "website",
   },
 };
@@ -35,7 +35,7 @@ export default function AboutPage() {
               About <span className="text-orange">Junk Captain</span>
             </h1>
             <p className="text-xl md:text-2xl text-white/80 max-w-3xl mx-auto">
-              Your trusted partner for junk removal in the Triangle area since 2020
+              Your trusted partner for junk removal in the Triangle area since 2026
             </p>
           </div>
 
@@ -43,14 +43,16 @@ export default function AboutPage() {
             <div className="space-y-6 text-white">
               <h2 className="text-3xl font-bold">Our Story</h2>
               <p className="text-lg text-white/90 leading-relaxed">
-                Founded in 2020, Junk Captain was born from a simple idea: junk removal should be easy, 
-                affordable, and environmentally responsible. What started as a single truck operation in 
-                Raleigh has grown into the Triangle area&apos;s most trusted junk removal service.
+                Founded in 2026, Junk Captain brings together over a decade of shared experience between 
+                our founders. Our goal is simple: provide the best service at a fair price. We believe our 
+                experience and ethics should drive our business—more affordable than the competition while 
+                delivering even better service.
               </p>
               <p className="text-lg text-white/90 leading-relaxed">
-                We&apos;ve helped thousands of homeowners, businesses, and property managers reclaim their 
-                space by removing unwanted items quickly and professionally. Our commitment to customer 
-                service and eco-friendly disposal has made us the go-to choice for junk removal across 
+                That means transparent pricing with no hidden fees. You&apos;ll know the cost before we load 
+                a single item. We&apos;ve already served hundreds of homeowners and businesses in the Raleigh 
+                area, and we&apos;re quickly becoming Raleigh&apos;s most trusted junk removal service. Our 
+                commitment to customer service and eco-friendly disposal makes us the go-to choice across 
                 Raleigh, Cary, Apex, Durham, and Fuquay-Varina.
               </p>
             </div>
@@ -59,8 +61,8 @@ export default function AboutPage() {
               <div className="absolute inset-0 bg-gradient-to-br from-orange/20 to-teal/20"></div>
               <div className="absolute inset-0 flex items-center justify-center">
                 <div className="text-center text-white">
-                  <div className="text-6xl font-bold mb-4">2500+</div>
-                  <div className="text-xl">Happy Customers Served</div>
+                <div className="text-6xl font-bold mb-4">Hundreds</div>
+                <div className="text-xl">Happy Customers Served</div>
                 </div>
               </div>
             </div>
@@ -86,8 +88,8 @@ export default function AboutPage() {
               <div className="text-4xl mb-4">🎯</div>
               <h3 className="text-2xl font-bold mb-4">Our Mission</h3>
               <p className="text-white/90 leading-relaxed">
-                To provide fast, affordable, and eco-friendly junk removal services that make life 
-                easier for our customers while protecting our environment for future generations.
+                To provide the best service at a fair price—transparent pricing, no hidden fees, and 
+                eco-friendly disposal. We make junk removal easy and affordable for every customer.
               </p>
             </div>
 
@@ -96,8 +98,8 @@ export default function AboutPage() {
               <div className="text-4xl mb-4">⭐</div>
               <h3 className="text-2xl font-bold mb-4">Customer First</h3>
               <p className="text-white/90 leading-relaxed">
-                Every decision we make starts with you. From transparent pricing to same-day service, 
-                we&apos;re committed to exceeding your expectations on every job.
+                Every decision we make starts with you. Transparent pricing with no hidden fees, 
+                same-day service when you need it—we&apos;re committed to exceeding your expectations on every job.
               </p>
             </div>
 
@@ -154,9 +156,9 @@ export default function AboutPage() {
                 description: "Simple online booking or call us directly. We make scheduling your junk removal effortless."
               },
               {
-                icon: "🏆",
-                title: "5-Star Rated",
-                description: "Hundreds of 5-star reviews from satisfied customers across the Triangle area."
+                icon: "📋",
+                title: "Transparent Pricing",
+                description: "No hidden fees. You get a clear quote before we start—no surprises, no add-ons at the end."
               },
               {
                 icon: "🏠",
@@ -220,7 +222,7 @@ export default function AboutPage() {
                   📞 Call (919) 924-8463
                 </Link>
                 <Link 
-                  href="/#contact"
+                  href="/#home"
                   className="bg-navy hover:bg-navy/90 text-white font-bold py-4 px-8 rounded-lg transition-colors duration-200 shadow-lg hover:shadow-xl"
                 >
                   Request Free Quote
@@ -291,11 +293,11 @@ export default function AboutPage() {
             Ready to Reclaim Your Space?
           </h2>
           <p className="text-xl text-gray-600 mb-8">
-            Join thousands of satisfied customers who trust Junk Captain for fast, affordable, and eco-friendly junk removal.
+            Join hundreds of satisfied customers who trust Junk Captain for fast, affordable, and eco-friendly junk removal.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
             <Link 
-              href="/#contact"
+              href="/#home"
               className="bg-orange hover:bg-orange/90 text-white font-bold py-4 px-10 rounded-lg transition-colors duration-200 shadow-lg hover:shadow-xl text-lg"
             >
               Get Free Quote

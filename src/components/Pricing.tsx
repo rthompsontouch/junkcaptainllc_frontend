@@ -133,7 +133,7 @@ export default function Pricing() {
             </p>
           </a>
           <a
-            href="#contact"
+            href="#home"
             className="bg-white/10 backdrop-blur-sm rounded-xl p-6 text-center hover:bg-white/20 transition-all duration-300 hover:scale-105 cursor-pointer"
           >
             <div className="text-4xl mb-3">👀</div>
@@ -143,7 +143,7 @@ export default function Pricing() {
             </p>
           </a>
           <a
-            href="#contact"
+            href="#home"
             className="bg-white/10 backdrop-blur-sm rounded-xl p-6 text-center hover:bg-white/20 transition-all duration-300 hover:scale-105 cursor-pointer"
           >
             <div className="text-4xl mb-3">✅</div>
@@ -186,7 +186,7 @@ export default function Pricing() {
         {/* CTA Button */}
         <div className="text-center mt-12">
           <a
-            href="#contact"
+            href="#home"
             className="inline-block bg-orange hover:bg-orange/90 text-white font-bold py-4 px-12 rounded-lg text-lg transition-colors shadow-2xl hover:shadow-orange/50"
           >
             Get Your Free Estimate Now
