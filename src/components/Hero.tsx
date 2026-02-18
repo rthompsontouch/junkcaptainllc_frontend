@@ -12,24 +12,60 @@ export default function Hero() {
     message: "",
   });
   const [images, setImages] = useState<File[]>([]);
+  const [submitting, setSubmitting] = useState(false);
+  const [submitStatus, setSubmitStatus] = useState<"idle" | "success" | "error">("idle");
+  const [submitMessage, setSubmitMessage] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Form submitted:", formData, images);
-    // Will handle form submission later
-    
-    // Reset form
-    setFormData({
-      name: "",
-      email: "",
-      phone: "",
-      address: "",
-      message: "",
-    });
-    setImages([]);
-    if (fileInputRef.current) {
-      fileInputRef.current.value = "";
+    setSubmitting(true);
+    setSubmitStatus("idle");
+    setSubmitMessage("");
+
+    try {
+      const res = await fetch("/api/quote", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: formData.name,
+          email: formData.email,
+          phone: formData.phone,
+          address: formData.address,
+          message: formData.message,
+          imageCount: images.length,
+          // TODO: When backend supports file upload, send images via FormData
+        }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        setSubmitStatus("error");
+        setSubmitMessage(data.error || "Something went wrong. Please try again or call us.");
+        return;
+      }
+
+      setSubmitStatus("success");
+      setSubmitMessage(data.message || "Thank you! We'll be in touch soon with your free quote.");
+
+      // Reset form
+      setFormData({
+        name: "",
+        email: "",
+        phone: "",
+        address: "",
+        message: "",
+      });
+      setImages([]);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
+    } catch {
+      setSubmitStatus("error");
+      setSubmitMessage("Something went wrong. Please try again or call us.");
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -99,11 +135,21 @@ export default function Hero() {
           </div>
 
           {/* Right Side - Form */}
-          <div className="bg-white rounded-lg shadow-2xl p-8">
+          <div className="bg-white rounded-lg shadow-2xl p-8 text-gray-900">
             <h2 className="text-2xl font-bold text-navy mb-6">
               Request a Free Quote
             </h2>
             <form onSubmit={handleSubmit} className="space-y-4">
+              {submitStatus === "success" && (
+                <div className="bg-green-100 border border-green-200 text-green-800 rounded-lg px-4 py-3 text-sm">
+                  {submitMessage}
+                </div>
+              )}
+              {submitStatus === "error" && (
+                <div className="bg-red-100 border border-red-200 text-red-700 rounded-lg px-4 py-3 text-sm">
+                  {submitMessage}
+                </div>
+              )}
               {/* Name and Email Row */}
               <div className="grid grid-cols-2 gap-3">
                 <div>
@@ -120,7 +166,7 @@ export default function Hero() {
                     required
                     value={formData.name}
                     onChange={handleChange}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange focus:border-transparent outline-none transition-all text-sm"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange focus:border-transparent outline-none transition-all text-sm text-gray-900 placeholder:text-gray-500"
                   />
                 </div>
 
@@ -138,7 +184,7 @@ export default function Hero() {
                     required
                     value={formData.email}
                     onChange={handleChange}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange focus:border-transparent outline-none transition-all text-sm"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange focus:border-transparent outline-none transition-all text-sm text-gray-900 placeholder:text-gray-500"
                   />
                 </div>
               </div>
@@ -159,7 +205,7 @@ export default function Hero() {
                     required
                     value={formData.phone}
                     onChange={handleChange}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange focus:border-transparent outline-none transition-all text-sm"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange focus:border-transparent outline-none transition-all text-sm text-gray-900 placeholder:text-gray-500"
                   />
                 </div>
 
@@ -177,7 +223,7 @@ export default function Hero() {
                     required
                     value={formData.address}
                     onChange={handleChange}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange focus:border-transparent outline-none transition-all text-sm"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange focus:border-transparent outline-none transition-all text-sm text-gray-900 placeholder:text-gray-500"
                   />
                 </div>
               </div>
@@ -195,7 +241,7 @@ export default function Hero() {
                   rows={2}
                   value={formData.message}
                   onChange={handleChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange focus:border-transparent outline-none transition-all resize-none text-sm"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange focus:border-transparent outline-none transition-all resize-none text-sm text-gray-900 placeholder:text-gray-500"
                 ></textarea>
               </div>
 
@@ -210,7 +256,7 @@ export default function Hero() {
                   accept="image/*"
                   multiple
                   onChange={handleImageChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange focus:border-transparent outline-none transition-all text-sm file:mr-4 file:py-1 file:px-3 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-orange/10 file:text-orange hover:file:bg-orange/20"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange focus:border-transparent outline-none transition-all text-sm text-gray-900 file:mr-4 file:py-1 file:px-3 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-orange/10 file:text-orange hover:file:bg-orange/20"
                 />
                 {images.length > 0 && (
                   <div className="mt-2 grid grid-cols-4 gap-2">
@@ -236,9 +282,10 @@ export default function Hero() {
 
               <button
                 type="submit"
-                className="w-full bg-orange hover:bg-orange/90 text-white font-bold py-3 px-6 rounded-lg transition-colors"
+                disabled={submitting}
+                className="w-full bg-orange hover:bg-orange/90 text-white font-bold py-3 px-6 rounded-lg transition-colors disabled:opacity-70 disabled:cursor-not-allowed"
               >
-                Get Free Quote
+                {submitting ? "Submitting..." : "Get Free Quote"}
               </button>
             </form>
           </div>

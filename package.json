@@ -1,11 +1,18 @@
 {
-  "name": "junkcaptainllc_frontend",
+  "name": "junkcaptain-monorepo",
   "version": "0.1.0",
   "private": true,
+  "workspaces": [
+    "backend"
+  ],
   "scripts": {
     "dev": "next dev",
+    "dev:backend": "npm run dev --workspace=junkcaptain-backend",
     "build": "next build",
+    "build:backend": "npm run build --workspace=junkcaptain-backend",
     "start": "next start",
+    "start:backend": "npm run start --workspace=junkcaptain-backend",
+    "seed": "npm run seed --workspace=junkcaptain-backend",
     "lint": "eslint"
   },
   "dependencies": {
