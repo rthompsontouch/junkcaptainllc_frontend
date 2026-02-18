@@ -9,7 +9,11 @@ const router = Router();
 router.use(authMiddleware);
 
 function toApiCustomer(doc: { _id: mongoose.Types.ObjectId; toObject?: () => Record<string, unknown> }) {
-  const obj = (doc.toObject ? doc.toObject() : doc) as Record<string, unknown>;
+  const obj = (
+    "toObject" in doc && typeof doc.toObject === "function"
+      ? doc.toObject()
+      : doc
+  ) as Record<string, unknown>;
   const { _id, ...rest } = obj;
   return {
     id: (_id as mongoose.Types.ObjectId).toString(),
