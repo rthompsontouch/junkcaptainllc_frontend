@@ -24,7 +24,7 @@ export const metadata: Metadata = {
     default: "Junk Captain LLC | Professional Junk Removal in Raleigh, Cary, Apex & Durham",
     template: "%s | Junk Captain LLC"
   },
-  description: "Professional junk removal services in Raleigh, Cary, Apex, Fuquay Varina, and Durham. Same-day service available. Free estimates. Licensed & insured. Call (919) 924-8463 today!",
+  description: "Professional junk removal services in Raleigh, Cary, Apex, Fuquay Varina, and Durham. Same-day service available. Free estimates. Licensed & insured. Call (910) 808-1125 today!",
   keywords: [
     "junk removal Raleigh",
     "junk removal Cary",
@@ -57,7 +57,7 @@ export const metadata: Metadata = {
     url: "https://junkcaptainllc.com",
     siteName: "Junk Captain LLC",
     title: "Junk Captain LLC | Professional Junk Removal in Raleigh, Cary, Apex & Durham",
-    description: "Professional junk removal services in the Triangle area. Same-day service, free estimates, and eco-friendly disposal. Call (919) 924-8463!",
+    description: "Professional junk removal services in the Triangle area. Same-day service, free estimates, and eco-friendly disposal. Call (910) 808-1125!",
     images: [
       {
         url: "/brand/logo/logo_original.jpg",
@@ -70,7 +70,7 @@ export const metadata: Metadata = {
   twitter: {
     card: "summary_large_image",
     title: "Junk Captain LLC | Professional Junk Removal in Raleigh Area",
-    description: "Same-day junk removal in Raleigh, Cary, Apex, Durham & Fuquay Varina. Free estimates. Licensed & insured. Call (919) 924-8463!",
+    description: "Same-day junk removal in Raleigh, Cary, Apex, Durham & Fuquay Varina. Free estimates. Licensed & insured. Call (910) 808-1125!",
     images: ["/brand/logo/logo_original.jpg"],
   },
   robots: {

@@ -119,10 +119,10 @@ export default function QuoteCTA() {
               📸 Upload Photos & Get Quote
             </a>
             <Link
-              href="tel:919-924-8463"
+              href="tel:+19108081125"
               className="bg-white hover:bg-gray-100 text-navy font-bold py-5 px-10 rounded-lg transition-colors duration-200 shadow-xl hover:shadow-2xl text-lg"
             >
-              📞 Call (919) 924-8463
+              📞 Call (910) 808-1125
             </Link>
           </div>
           <p className="text-white/80 mt-6 text-lg">

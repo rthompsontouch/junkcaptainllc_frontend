@@ -44,7 +44,7 @@ export default function FAQ() {
     },
     {
       question: "How do I schedule a pickup?",
-      answer: "You can call us at (919) 924-8463 or fill out our online form. We'll discuss your needs, provide an estimate, and schedule a convenient time. Most pickups can be scheduled within 24-48 hours.",
+      answer: "You can call us at (910) 808-1125 or fill out our online form. We'll discuss your needs, provide an estimate, and schedule a convenient time. Most pickups can be scheduled within 24-48 hours.",
     },
   ];
 
@@ -62,7 +62,7 @@ export default function FAQ() {
           </h2>
           <p className="text-lg text-gray-600">
             Got questions? We&apos;ve got answers. Can&apos;t find what you&apos;re looking for?{" "}
-            <a href="tel:+19199248463" className="text-orange hover:underline font-semibold">
+            <a href="tel:+19108081125" className="text-orange hover:underline font-semibold">
               Give us a call
             </a>
             .
@@ -122,7 +122,7 @@ export default function FAQ() {
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <a
-              href="tel:+19199248463"
+              href="tel:+19108081125"
               className="bg-orange hover:bg-orange/90 text-white font-bold py-3 px-8 rounded-lg transition-colors inline-flex items-center justify-center gap-2"
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

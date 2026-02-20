@@ -1,5 +1,10 @@
 import mongoose, { Schema, Document, Model } from "mongoose";
 
+export interface IServiceRecord {
+  date: string;
+  note: string;
+}
+
 export interface IActiveCustomer extends Document {
   name: string;
   email: string;
@@ -8,12 +13,18 @@ export interface IActiveCustomer extends Document {
   service: string;
   lastServiceDate: string;
   serviceNote: string;
+  serviceHistory: IServiceRecord[];
   images: number;
   imageUrls?: string[];
   notes: string;
   createdAt: Date;
   updatedAt: Date;
 }
+
+const ServiceRecordSchema = new Schema<IServiceRecord>(
+  { date: { type: String, required: true }, note: { type: String, default: "" } },
+  { _id: false }
+);
 
 const ActiveCustomerSchema = new Schema<IActiveCustomer>(
   {
@@ -24,6 +35,7 @@ const ActiveCustomerSchema = new Schema<IActiveCustomer>(
     service: { type: String, default: "Quote Request", trim: true },
     lastServiceDate: { type: String, required: true },
     serviceNote: { type: String, default: "" },
+    serviceHistory: { type: [ServiceRecordSchema], default: [] },
     images: { type: Number, default: 0 },
     imageUrls: [{ type: String }],
     notes: { type: String, default: "" },

@@ -82,6 +82,27 @@ router.put("/", async (req: Request, res: Response) => {
   try {
     const { action, id, type, ...data } = req.body;
 
+    if (action === "addService") {
+      const { date, note } = req.body;
+      if (!date?.trim()) {
+        res.status(400).json({ error: "Service date is required" });
+        return;
+      }
+      const doc = await ActiveCustomer.findById(id);
+      if (!doc) {
+        res.status(404).json({ error: "Customer not found" });
+        return;
+      }
+      const serviceRecord = { date: date.trim(), note: (note || "").trim() };
+      doc.serviceHistory = doc.serviceHistory || [];
+      doc.serviceHistory.unshift(serviceRecord);
+      doc.lastServiceDate = serviceRecord.date;
+      doc.serviceNote = serviceRecord.note;
+      await doc.save();
+      res.json(toApiCustomer(doc));
+      return;
+    }
+
     if (action === "convert") {
       const doc = await PotentialCustomer.findById(id);
       if (!doc) {
@@ -89,14 +110,17 @@ router.put("/", async (req: Request, res: Response) => {
         return;
       }
 
+      const firstServiceDate = new Date().toISOString().split("T")[0];
+      const firstServiceNote = "Converted from potential customer";
       const active = await ActiveCustomer.create({
         name: doc.name,
         email: doc.email,
         phone: doc.phone,
         address: doc.address,
         service: doc.service,
-        lastServiceDate: new Date().toISOString().split("T")[0],
-        serviceNote: "Converted from potential customer",
+        lastServiceDate: firstServiceDate,
+        serviceNote: firstServiceNote,
+        serviceHistory: [{ date: firstServiceDate, note: firstServiceNote }],
         images: doc.images,
         imageUrls: doc.imageUrls,
         notes: doc.notes,
@@ -128,15 +152,24 @@ router.put("/", async (req: Request, res: Response) => {
     }
 
     if (type === "active") {
-      const doc = await ActiveCustomer.findByIdAndUpdate(
-        id,
-        { $set: data },
-        { new: true }
-      );
+      const doc = await ActiveCustomer.findById(id);
       if (!doc) {
         res.status(404).json({ error: "Not found" });
         return;
       }
+      if (data.lastServiceDate !== undefined || data.serviceNote !== undefined) {
+        const history = doc.serviceHistory || [];
+        const updatedDate = data.lastServiceDate ?? doc.lastServiceDate;
+        const updatedNote = data.serviceNote ?? doc.serviceNote;
+        if (history.length > 0) {
+          history[0] = { date: updatedDate, note: updatedNote };
+        } else {
+          history.unshift({ date: updatedDate, note: updatedNote });
+        }
+        data.serviceHistory = history;
+      }
+      Object.assign(doc, data);
+      await doc.save();
       res.json(toApiCustomer(doc));
       return;
     }

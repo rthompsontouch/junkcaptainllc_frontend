@@ -120,7 +120,7 @@ export default function Hero() {
             </p>
             <div className="flex flex-col sm:flex-row gap-4 pt-4">
               <a
-                href="tel:+1234567890"
+                href="tel:+19108081125"
                 className="bg-orange hover:bg-orange/90 text-white font-bold py-4 px-8 rounded-lg text-lg transition-colors text-center"
               >
                 Call Now

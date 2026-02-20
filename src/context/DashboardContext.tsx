@@ -23,6 +23,11 @@ export interface PotentialCustomer {
   notes: string;
 }
 
+export interface ServiceRecord {
+  date: string;
+  note: string;
+}
+
 export interface ActiveCustomer {
   id: string | number;
   name: string;
@@ -32,6 +37,7 @@ export interface ActiveCustomer {
   service: string;
   lastServiceDate: string;
   serviceNote: string;
+  serviceHistory?: ServiceRecord[];
   images: number;
   notes: string;
 }
@@ -66,6 +72,7 @@ interface DashboardContextType extends DashboardState {
   ) => Promise<void>;
   deleteCustomer: (id: string | number, type: "potential" | "active") => Promise<void>;
   convertToCustomer: (id: string | number) => Promise<void>;
+  addServiceRecord: (customerId: string | number, date: string, note: string) => Promise<ActiveCustomer | void>;
   fetchNotifications: () => Promise<void>;
   markNotificationRead: (id: string | number) => Promise<void>;
 }
@@ -315,6 +322,37 @@ export const DashboardProvider = ({ children }: DashboardProviderProps) => {
     }
   };
 
+  const addServiceRecord = async (customerId: string | number, date: string, note: string) => {
+    if (!token) throw new Error("Not authenticated");
+
+    try {
+      const res = await fetch("/api/customers", {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ action: "addService", id: customerId, date, note }),
+      });
+
+      if (!res.ok) {
+        if (res.status === 401) {
+          logout();
+          router.replace("/login");
+          return;
+        }
+        throw new Error("Failed to add service");
+      }
+
+      const updated = await res.json();
+      await fetchCustomers();
+      return updated;
+    } catch (err) {
+      console.error("Add service failed:", err);
+      throw err;
+    }
+  };
+
   const markNotificationRead = async (id: string | number) => {
     if (!token) throw new Error("Not authenticated");
 
@@ -354,6 +392,7 @@ export const DashboardProvider = ({ children }: DashboardProviderProps) => {
     updateCustomer,
     deleteCustomer,
     convertToCustomer,
+    addServiceRecord,
     fetchNotifications,
     markNotificationRead,
   };

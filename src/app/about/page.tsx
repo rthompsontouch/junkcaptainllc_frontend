@@ -14,7 +14,7 @@ export const metadata: Metadata = {
   ],
   openGraph: {
     title: "About Junk Captain LLC | Professional Junk Removal in Triangle NC",
-    description: "Trusted junk removal service serving the Triangle area since 2026. Transparent pricing, no hidden fees. Licensed, insured, and eco-friendly. Call (919) 924-8463!",
+    description: "Trusted junk removal service serving the Triangle area since 2026. Transparent pricing, no hidden fees. Licensed, insured, and eco-friendly. Call (910) 808-1125!",
     type: "website",
   },
 };
@@ -216,10 +216,10 @@ export default function AboutPage() {
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
                 <Link 
-                  href="tel:919-924-8463"
+                  href="tel:+19108081125"
                   className="bg-orange hover:bg-orange/90 text-white font-bold py-4 px-8 rounded-lg transition-colors duration-200 shadow-lg hover:shadow-xl"
                 >
-                  📞 Call (919) 924-8463
+                  📞 Call (910) 808-1125
                 </Link>
                 <Link 
                   href="/#home"
@@ -303,10 +303,10 @@ export default function AboutPage() {
               Get Free Quote
             </Link>
             <Link 
-              href="tel:919-924-8463"
+              href="tel:+19108081125"
               className="bg-navy hover:bg-navy/90 text-white font-bold py-4 px-10 rounded-lg transition-colors duration-200 shadow-lg hover:shadow-xl text-lg"
             >
-              Call (919) 924-8463
+              Call (910) 808-1125
             </Link>
           </div>
         </div>

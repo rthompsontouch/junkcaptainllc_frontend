@@ -123,7 +123,7 @@ export default function Pricing() {
         {/* Bottom Info Cards */}
         <div className="grid md:grid-cols-3 gap-6 mt-16">
           <a
-            href="tel:+19199248463"
+            href="tel:+19108081125"
             className="bg-white/10 backdrop-blur-sm rounded-xl p-6 text-center hover:bg-white/20 transition-all duration-300 hover:scale-105 cursor-pointer"
           >
             <div className="text-4xl mb-3">📞</div>

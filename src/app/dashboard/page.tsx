@@ -21,6 +21,11 @@ interface PotentialCustomer {
   notes: string;
 }
 
+interface ServiceRecord {
+  date: string;
+  note: string;
+}
+
 interface ActiveCustomer {
   id: string | number;
   name: string;
@@ -30,6 +35,7 @@ interface ActiveCustomer {
   service: string;
   lastServiceDate: string;
   serviceNote: string;
+  serviceHistory?: ServiceRecord[];
   images: number;
   notes: string;
 }
@@ -53,6 +59,7 @@ export default function DashboardPage() {
     updateCustomer,
     deleteCustomer,
     convertToCustomer,
+    addServiceRecord,
     markNotificationRead,
   } = useDashboard();
   const { user, logout, token } = useAuth();
@@ -67,6 +74,9 @@ export default function DashboardPage() {
   const [editForm, setEditForm] = useState<Partial<Customer>>({});
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
+  const [newServiceDate, setNewServiceDate] = useState("");
+  const [newServiceNote, setNewServiceNote] = useState("");
+  const [addingService, setAddingService] = useState(false);
 
   useEffect(() => {
     setMounted(true);
@@ -118,6 +128,24 @@ export default function DashboardPage() {
   const handleConvertToCustomer = async (customer: PotentialCustomer) => {
     await convertToCustomer(customer.id);
     setActiveTab("customers");
+  };
+
+  const handleAddService = async () => {
+    if (!selectedCustomer || !isActiveCustomer(selectedCustomer) || !newServiceDate.trim()) return;
+    setAddingService(true);
+    try {
+      const updated = await addServiceRecord(selectedCustomer.id, newServiceDate.trim(), newServiceNote.trim());
+      if (updated) {
+        setSelectedCustomer(updated);
+        setEditForm(updated);
+        setNewServiceDate("");
+        setNewServiceNote("");
+      }
+    } catch {
+      // Error already logged
+    } finally {
+      setAddingService(false);
+    }
   };
 
   const handleDeleteCustomer = async () => {
@@ -329,8 +357,8 @@ export default function DashboardPage() {
           <div className="mb-6">
             <div className="border-b border-gray-200">
               <nav className="-mb-px flex gap-3 md:gap-6">
-                <button onClick={() => setActiveTab("potential")} className={`py-3 md:py-4 px-1 border-b-2 font-medium text-sm ${activeTab === "potential" ? "border-orange text-orange" : "border-transparent text-gray-600"}`}>Potential Customers ({stats.potential})</button>
-                <button onClick={() => setActiveTab("customers")} className={`py-3 md:py-4 px-1 border-b-2 font-medium text-sm ${activeTab === "customers" ? "border-orange text-orange" : "border-transparent text-gray-600"}`}>Active Customers ({stats.customers})</button>
+                <button type="button" onClick={() => setActiveTab("potential")} className={`py-3 md:py-4 px-1 border-b-2 font-medium text-sm cursor-pointer ${activeTab === "potential" ? "border-orange text-orange" : "border-transparent text-gray-600 hover:text-gray-900"}`}>Potential Customers ({stats.potential})</button>
+                <button type="button" onClick={() => setActiveTab("customers")} className={`py-3 md:py-4 px-1 border-b-2 font-medium text-sm cursor-pointer ${activeTab === "customers" ? "border-orange text-orange" : "border-transparent text-gray-600 hover:text-gray-900"}`}>Active Customers ({stats.customers})</button>
               </nav>
             </div>
           </div>
@@ -338,7 +366,7 @@ export default function DashboardPage() {
           <div className="bg-white p-4 md:p-6 rounded-xl shadow-sm border border-gray-200 mb-6">
             <div className="flex gap-4">
               <input type="text" placeholder="Search..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="flex-1 pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange text-gray-900 placeholder:text-gray-500" />
-              <button onClick={handleExport} className="px-4 md:px-6 py-2 bg-teal hover:bg-teal/90 text-white font-medium rounded-lg">Export</button>
+              <button type="button" onClick={handleExport} className="px-4 md:px-6 py-2 bg-teal hover:bg-teal/90 text-white font-medium rounded-lg cursor-pointer transition-colors">Export</button>
             </div>
           </div>
 
@@ -373,7 +401,7 @@ export default function DashboardPage() {
                       <td className="px-6 py-4 text-gray-900">{new Date(isPotentialCustomer(customer) ? customer.date : customer.lastServiceDate).toLocaleDateString()}</td>
                       <td className="px-6 py-4 text-right">
                         {activeTab === "potential" && isPotentialCustomer(customer) && (
-                          <button onClick={(e) => { e.stopPropagation(); handleConvertToCustomer(customer); }} className="px-3 py-1 bg-green-100 text-green-700 text-xs font-semibold rounded-lg">Convert</button>
+                          <button type="button" onClick={(e) => { e.stopPropagation(); handleConvertToCustomer(customer); }} className="px-3 py-1.5 bg-green-100 hover:bg-green-200 text-green-700 text-xs font-semibold rounded-lg cursor-pointer transition-colors">Convert</button>
                         )}
                       </td>
                     </tr>
@@ -387,7 +415,7 @@ export default function DashboardPage() {
                   <div className="font-semibold text-gray-900">{customer.name}</div>
                   <div className="text-sm text-gray-600">{customer.service}</div>
                   {activeTab === "potential" && isPotentialCustomer(customer) && (
-                    <button onClick={(e) => { e.stopPropagation(); handleConvertToCustomer(customer); }} className="mt-2 px-3 py-1 bg-green-100 text-green-700 text-xs font-semibold rounded-lg">Convert</button>
+                    <button type="button" onClick={(e) => { e.stopPropagation(); handleConvertToCustomer(customer); }} className="mt-2 px-3 py-1.5 bg-green-100 hover:bg-green-200 text-green-700 text-xs font-semibold rounded-lg cursor-pointer transition-colors">Convert</button>
                   )}
                 </div>
               ))}
@@ -401,7 +429,7 @@ export default function DashboardPage() {
           <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
             <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex justify-between">
               <h3 className="text-xl font-bold text-gray-900">Customer Details</h3>
-              <button onClick={() => { setIsModalOpen(false); setSelectedCustomer(null); }} className="p-2 hover:bg-gray-100 rounded-lg text-gray-600">×</button>
+              <button type="button" onClick={() => { setIsModalOpen(false); setSelectedCustomer(null); setNewServiceDate(""); setNewServiceNote(""); }} className="p-2 hover:bg-gray-100 rounded-lg text-gray-600 cursor-pointer transition-colors" aria-label="Close">×</button>
             </div>
             <div className="p-6 space-y-4">
               <div>
@@ -417,7 +445,7 @@ export default function DashboardPage() {
                 <input type="text" value={editForm.address || ""} onChange={(e) => setEditForm({ ...editForm, address: e.target.value })} className="w-full px-4 py-2 border border-gray-300 rounded-lg text-gray-900 placeholder:text-gray-500 focus:ring-2 focus:ring-orange focus:border-transparent" />
               </div>
 
-              {/* Last Service Date + Service Note (active customers only) */}
+              {/* Service history + Last Service (active customers only) */}
               {activeTab === "customers" && isActiveCustomer(selectedCustomer) && (
                 <>
                   <div>
@@ -425,8 +453,44 @@ export default function DashboardPage() {
                     <input type="date" value={(editForm as ActiveCustomer).lastServiceDate || ""} onChange={(e) => setEditForm({ ...editForm, lastServiceDate: e.target.value })} className="w-full px-4 py-2 border border-gray-300 rounded-lg text-gray-900 focus:ring-2 focus:ring-orange focus:border-transparent" />
                   </div>
                   <div>
-                    <label className="block text-sm font-semibold mb-2 text-gray-900">Service Note</label>
+                    <label className="block text-sm font-semibold mb-2 text-gray-900">Last Service Note</label>
                     <textarea value={(editForm as ActiveCustomer).serviceNote || ""} onChange={(e) => setEditForm({ ...editForm, serviceNote: e.target.value })} rows={3} className="w-full px-4 py-2 border border-gray-300 rounded-lg text-gray-900 placeholder:text-gray-500 focus:ring-2 focus:ring-orange focus:border-transparent resize-none" placeholder="Notes from the service..." />
+                  </div>
+
+                  {/* Service History */}
+                  <div>
+                    <label className="block text-sm font-semibold mb-2 text-gray-900">Service History</label>
+                    <div className="space-y-2 max-h-40 overflow-y-auto">
+                      {(() => {
+                        const history = (selectedCustomer as ActiveCustomer).serviceHistory || [];
+                        const fallback = (selectedCustomer as ActiveCustomer).lastServiceDate
+                          ? [{ date: (selectedCustomer as ActiveCustomer).lastServiceDate, note: (selectedCustomer as ActiveCustomer).serviceNote || "" }]
+                          : [];
+                        const list = history.length > 0 ? history : fallback;
+                        return list.length === 0 ? (
+                          <p className="text-sm text-gray-500 py-2">No service history yet.</p>
+                        ) : (
+                          list.map((svc, i) => (
+                            <div key={i} className="flex gap-3 p-3 bg-gray-50 rounded-lg border border-gray-100">
+                              <div className="font-medium text-gray-900 shrink-0">{new Date(svc.date).toLocaleDateString()}</div>
+                              <div className="text-sm text-gray-600">{svc.note || "—"}</div>
+                            </div>
+                          ))
+                        );
+                      })()}
+                    </div>
+                  </div>
+
+                  {/* Add new service */}
+                  <div className="border-t border-gray-200 pt-4">
+                    <label className="block text-sm font-semibold mb-2 text-gray-900">Add New Service</label>
+                    <div className="space-y-2">
+                      <input type="date" value={newServiceDate} onChange={(e) => setNewServiceDate(e.target.value)} className="w-full px-4 py-2 border border-gray-300 rounded-lg text-gray-900 focus:ring-2 focus:ring-orange focus:border-transparent" />
+                      <textarea value={newServiceNote} onChange={(e) => setNewServiceNote(e.target.value)} rows={2} className="w-full px-4 py-2 border border-gray-300 rounded-lg text-gray-900 placeholder:text-gray-500 focus:ring-2 focus:ring-orange focus:border-transparent resize-none" placeholder="Notes about this service..." />
+                      <button type="button" onClick={handleAddService} disabled={!newServiceDate.trim() || addingService} className="px-4 py-2 bg-teal hover:bg-teal/90 disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold rounded-lg cursor-pointer transition-colors text-sm">
+                        {addingService ? "Adding..." : "Add Service"}
+                      </button>
+                    </div>
                   </div>
                 </>
               )}
@@ -462,13 +526,13 @@ export default function DashboardPage() {
                 <textarea value={editForm.notes || ""} onChange={(e) => setEditForm({ ...editForm, notes: e.target.value })} rows={4} className="w-full px-4 py-2 border border-gray-300 rounded-lg text-gray-900 placeholder:text-gray-500 focus:ring-2 focus:ring-orange focus:border-transparent resize-none" placeholder="Add notes..." />
               </div>
             </div>
-            <div className="sticky bottom-0 bg-gray-50 border-t border-gray-200 px-6 py-4 flex gap-3">
-              <button onClick={handleDeleteCustomer} className="flex-1 px-4 py-2 text-red-600 hover:bg-red-100 font-semibold rounded-lg">Delete</button>
+            <div className="sticky bottom-0 bg-gray-50 border-t border-gray-200 px-6 py-4 flex flex-wrap gap-3">
+              <button type="button" onClick={handleDeleteCustomer} className="flex-1 min-w-[80px] px-4 py-2.5 text-red-600 hover:bg-red-100 font-semibold rounded-lg cursor-pointer transition-colors border border-red-200">Delete</button>
               {activeTab === "potential" && isPotentialCustomer(selectedCustomer) && (
-                <button onClick={() => handleConvertToCustomer(selectedCustomer)} className="flex-1 px-4 py-2 bg-teal text-white font-semibold rounded-lg">Convert</button>
+                <button type="button" onClick={() => handleConvertToCustomer(selectedCustomer)} className="flex-1 min-w-[80px] px-4 py-2.5 bg-teal hover:bg-teal/90 text-white font-semibold rounded-lg cursor-pointer transition-colors shadow-sm">Convert</button>
               )}
-              <button onClick={() => { setIsModalOpen(false); setSelectedCustomer(null); }} className="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-gray-900 hover:bg-gray-100 font-semibold">Cancel</button>
-              <button onClick={handleUpdateCustomer} className="flex-1 px-4 py-2 bg-orange text-white font-semibold rounded-lg">Save</button>
+              <button type="button" onClick={() => { setIsModalOpen(false); setSelectedCustomer(null); setNewServiceDate(""); setNewServiceNote(""); }} className="flex-1 min-w-[80px] px-4 py-2.5 border border-gray-300 rounded-lg text-gray-900 hover:bg-gray-100 font-semibold cursor-pointer transition-colors">Cancel</button>
+              <button type="button" onClick={handleUpdateCustomer} className="flex-1 min-w-[80px] px-4 py-2.5 bg-orange hover:bg-orange/90 text-white font-semibold rounded-lg cursor-pointer transition-colors shadow-sm">Save</button>
             </div>
           </div>
         </div>
