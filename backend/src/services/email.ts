@@ -11,6 +11,7 @@ export async function sendQuoteNotification(data: {
   address: string;
   message?: string;
   imageCount?: number;
+  imageUrls?: string[];
 }): Promise<boolean> {
   if (!resend) {
     console.warn("RESEND_API_KEY not set - skipping email notification");
@@ -38,6 +39,7 @@ export async function sendQuoteNotification(data: {
         <p><strong>Address:</strong> ${data.address}</p>
         ${data.message ? `<p><strong>Message:</strong><br/>${data.message}</p>` : ""}
         ${data.imageCount ? `<p><strong>Photos attached:</strong> ${data.imageCount}</p>` : ""}
+        ${data.imageUrls?.length ? data.imageUrls.map((url, i) => `<p><a href="${url}">View photo ${i + 1}</a></p>`).join("") : ""}
         <hr/>
         <p><em>Submitted via Junk Captain LLC website</em></p>
       `,

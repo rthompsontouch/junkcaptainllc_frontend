@@ -72,6 +72,8 @@ interface DashboardContextType extends DashboardState {
   ) => Promise<void>;
   deleteCustomer: (id: string | number, type: "potential" | "active") => Promise<void>;
   convertToCustomer: (id: string | number) => Promise<void>;
+  checkDuplicateCustomers: (potentialCustomerId: string | number) => Promise<ActiveCustomer[]>;
+  mergeWithCustomer: (potentialId: string | number, activeId: string | number) => Promise<ActiveCustomer | void>;
   addServiceRecord: (customerId: string | number, date: string, note: string) => Promise<ActiveCustomer | void>;
   fetchNotifications: () => Promise<void>;
   markNotificationRead: (id: string | number) => Promise<void>;
@@ -322,6 +324,36 @@ export const DashboardProvider = ({ children }: DashboardProviderProps) => {
     }
   };
 
+  const checkDuplicateCustomers = async (potentialCustomerId: string | number): Promise<ActiveCustomer[]> => {
+    if (!token) return [];
+    const res = await fetch(`/api/customers?checkDuplicates=${potentialCustomerId}`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    if (!res.ok) return [];
+    return res.json();
+  };
+
+  const mergeWithCustomer = async (potentialId: string | number, activeId: string | number) => {
+    if (!token) throw new Error("Not authenticated");
+    const res = await fetch("/api/customers", {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ action: "merge", potentialId, activeId }),
+    });
+    if (!res.ok) {
+      if (res.status === 401) {
+        logout();
+        router.replace("/login");
+        return;
+      }
+      throw new Error("Merge failed");
+    }
+    await fetchCustomers();
+  };
+
   const addServiceRecord = async (customerId: string | number, date: string, note: string) => {
     if (!token) throw new Error("Not authenticated");
 
@@ -392,6 +424,8 @@ export const DashboardProvider = ({ children }: DashboardProviderProps) => {
     updateCustomer,
     deleteCustomer,
     convertToCustomer,
+    checkDuplicateCustomers,
+    mergeWithCustomer,
     addServiceRecord,
     fetchNotifications,
     markNotificationRead,

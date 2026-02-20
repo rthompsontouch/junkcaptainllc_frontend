@@ -24,18 +24,17 @@ export default function Hero() {
     setSubmitMessage("");
 
     try {
+      const form = new FormData();
+      form.append("name", formData.name);
+      form.append("email", formData.email);
+      form.append("phone", formData.phone);
+      form.append("address", formData.address);
+      form.append("message", formData.message);
+      images.forEach((file) => form.append("images", file));
+
       const res = await fetch("/api/quote", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          name: formData.name,
-          email: formData.email,
-          phone: formData.phone,
-          address: formData.address,
-          message: formData.message,
-          imageCount: images.length,
-          // TODO: When backend supports file upload, send images via FormData
-        }),
+        body: form,
       });
 
       const data = await res.json();

@@ -59,6 +59,8 @@ export default function DashboardPage() {
     updateCustomer,
     deleteCustomer,
     convertToCustomer,
+    checkDuplicateCustomers,
+    mergeWithCustomer,
     addServiceRecord,
     markNotificationRead,
   } = useDashboard();
@@ -77,6 +79,11 @@ export default function DashboardPage() {
   const [newServiceDate, setNewServiceDate] = useState("");
   const [newServiceNote, setNewServiceNote] = useState("");
   const [addingService, setAddingService] = useState(false);
+  const [convertModalOpen, setConvertModalOpen] = useState(false);
+  const [convertCandidate, setConvertCandidate] = useState<PotentialCustomer | null>(null);
+  const [duplicateCustomers, setDuplicateCustomers] = useState<ActiveCustomer[]>([]);
+  const [convertLoading, setConvertLoading] = useState(false);
+  const [lightboxImage, setLightboxImage] = useState<string | null>(null);
 
   useEffect(() => {
     setMounted(true);
@@ -98,6 +105,15 @@ export default function DashboardPage() {
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
   }, []);
+
+  useEffect(() => {
+    if (!lightboxImage) return;
+    const handleKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setLightboxImage(null);
+    };
+    window.addEventListener("keydown", handleKey);
+    return () => window.removeEventListener("keydown", handleKey);
+  }, [lightboxImage]);
 
   // Avoid hydration mismatch: server and initial client render the same loading state
   if (!mounted) {
@@ -125,9 +141,52 @@ export default function DashboardPage() {
     total: potentialCustomers.length + activeCustomers.length,
   };
 
-  const handleConvertToCustomer = async (customer: PotentialCustomer) => {
-    await convertToCustomer(customer.id);
-    setActiveTab("customers");
+  const openConvertModal = async (customer: PotentialCustomer) => {
+    setConvertCandidate(customer);
+    setConvertModalOpen(true);
+    setDuplicateCustomers([]);
+    try {
+      const matches = await checkDuplicateCustomers(customer.id);
+      setDuplicateCustomers(matches);
+    } catch {
+      setDuplicateCustomers([]);
+    }
+  };
+
+  const handleMergeWithCustomer = async (activeCustomer: ActiveCustomer) => {
+    if (!convertCandidate) return;
+    setConvertLoading(true);
+    try {
+      await mergeWithCustomer(convertCandidate.id, activeCustomer.id);
+      setConvertModalOpen(false);
+      setConvertCandidate(null);
+      setDuplicateCustomers([]);
+      setActiveTab("customers");
+      setIsModalOpen(false);
+      setSelectedCustomer(null);
+    } catch {
+      // Error logged
+    } finally {
+      setConvertLoading(false);
+    }
+  };
+
+  const handleConvertToNewCustomer = async () => {
+    if (!convertCandidate) return;
+    setConvertLoading(true);
+    try {
+      await convertToCustomer(convertCandidate.id);
+      setConvertModalOpen(false);
+      setConvertCandidate(null);
+      setDuplicateCustomers([]);
+      setActiveTab("customers");
+      setIsModalOpen(false);
+      setSelectedCustomer(null);
+    } catch {
+      // Error logged
+    } finally {
+      setConvertLoading(false);
+    }
   };
 
   const handleAddService = async () => {
@@ -401,7 +460,7 @@ export default function DashboardPage() {
                       <td className="px-6 py-4 text-gray-900">{new Date(isPotentialCustomer(customer) ? customer.date : customer.lastServiceDate).toLocaleDateString()}</td>
                       <td className="px-6 py-4 text-right">
                         {activeTab === "potential" && isPotentialCustomer(customer) && (
-                          <button type="button" onClick={(e) => { e.stopPropagation(); handleConvertToCustomer(customer); }} className="px-3 py-1.5 bg-green-100 hover:bg-green-200 text-green-700 text-xs font-semibold rounded-lg cursor-pointer transition-colors">Convert</button>
+                          <button type="button" onClick={(e) => { e.stopPropagation(); openConvertModal(customer); }} className="px-3 py-1.5 bg-green-100 hover:bg-green-200 text-green-700 text-xs font-semibold rounded-lg cursor-pointer transition-colors">Convert</button>
                         )}
                       </td>
                     </tr>
@@ -415,7 +474,7 @@ export default function DashboardPage() {
                   <div className="font-semibold text-gray-900">{customer.name}</div>
                   <div className="text-sm text-gray-600">{customer.service}</div>
                   {activeTab === "potential" && isPotentialCustomer(customer) && (
-                    <button type="button" onClick={(e) => { e.stopPropagation(); handleConvertToCustomer(customer); }} className="mt-2 px-3 py-1.5 bg-green-100 hover:bg-green-200 text-green-700 text-xs font-semibold rounded-lg cursor-pointer transition-colors">Convert</button>
+                    <button type="button" onClick={(e) => { e.stopPropagation(); openConvertModal(customer); }} className="mt-2 px-3 py-1.5 bg-green-100 hover:bg-green-200 text-green-700 text-xs font-semibold rounded-lg cursor-pointer transition-colors">Convert</button>
                   )}
                 </div>
               ))}
@@ -429,7 +488,7 @@ export default function DashboardPage() {
           <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
             <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex justify-between">
               <h3 className="text-xl font-bold text-gray-900">Customer Details</h3>
-              <button type="button" onClick={() => { setIsModalOpen(false); setSelectedCustomer(null); setNewServiceDate(""); setNewServiceNote(""); }} className="p-2 hover:bg-gray-100 rounded-lg text-gray-600 cursor-pointer transition-colors" aria-label="Close">×</button>
+              <button type="button" onClick={() => { setIsModalOpen(false); setSelectedCustomer(null); setNewServiceDate(""); setNewServiceNote(""); setLightboxImage(null); }} className="p-2 hover:bg-gray-100 rounded-lg text-gray-600 cursor-pointer transition-colors" aria-label="Close">×</button>
             </div>
             <div className="p-6 space-y-4">
               <div>
@@ -506,7 +565,13 @@ export default function DashboardPage() {
                     ).map((url, i) => (
                       <div key={i} className="aspect-square rounded-lg border-2 border-gray-200 overflow-hidden bg-gray-100">
                         {url ? (
-                          <img src={url} alt={`Junk photo ${i + 1}`} className="w-full h-full object-cover" />
+                          <button
+                            type="button"
+                            onClick={() => setLightboxImage(url)}
+                            className="w-full h-full block cursor-pointer hover:opacity-90 transition-opacity focus:ring-2 focus:ring-orange focus:ring-offset-2 rounded"
+                          >
+                            <img src={url} alt={`Junk photo ${i + 1}`} className="w-full h-full object-cover pointer-events-none" />
+                          </button>
                         ) : (
                           <div className="w-full h-full flex items-center justify-center text-gray-400">
                             <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -517,7 +582,7 @@ export default function DashboardPage() {
                       </div>
                     ))}
                   </div>
-                  <p className="text-xs text-gray-600 mt-1">Customer can upload up to 4 photos from the quote form. Image upload to storage coming soon.</p>
+                  <p className="text-xs text-gray-600 mt-1">Click a photo to view full size.</p>
                 </div>
               )}
 
@@ -529,10 +594,79 @@ export default function DashboardPage() {
             <div className="sticky bottom-0 bg-gray-50 border-t border-gray-200 px-6 py-4 flex flex-wrap gap-3">
               <button type="button" onClick={handleDeleteCustomer} className="flex-1 min-w-[80px] px-4 py-2.5 text-red-600 hover:bg-red-100 font-semibold rounded-lg cursor-pointer transition-colors border border-red-200">Delete</button>
               {activeTab === "potential" && isPotentialCustomer(selectedCustomer) && (
-                <button type="button" onClick={() => handleConvertToCustomer(selectedCustomer)} className="flex-1 min-w-[80px] px-4 py-2.5 bg-teal hover:bg-teal/90 text-white font-semibold rounded-lg cursor-pointer transition-colors shadow-sm">Convert</button>
+                <button type="button" onClick={() => openConvertModal(selectedCustomer)} className="flex-1 min-w-[80px] px-4 py-2.5 bg-teal hover:bg-teal/90 text-white font-semibold rounded-lg cursor-pointer transition-colors shadow-sm">Convert</button>
               )}
-              <button type="button" onClick={() => { setIsModalOpen(false); setSelectedCustomer(null); setNewServiceDate(""); setNewServiceNote(""); }} className="flex-1 min-w-[80px] px-4 py-2.5 border border-gray-300 rounded-lg text-gray-900 hover:bg-gray-100 font-semibold cursor-pointer transition-colors">Cancel</button>
+              <button type="button" onClick={() => { setIsModalOpen(false); setSelectedCustomer(null); setNewServiceDate(""); setNewServiceNote(""); setLightboxImage(null); }} className="flex-1 min-w-[80px] px-4 py-2.5 border border-gray-300 rounded-lg text-gray-900 hover:bg-gray-100 font-semibold cursor-pointer transition-colors">Cancel</button>
               <button type="button" onClick={handleUpdateCustomer} className="flex-1 min-w-[80px] px-4 py-2.5 bg-orange hover:bg-orange/90 text-white font-semibold rounded-lg cursor-pointer transition-colors shadow-sm">Save</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Image lightbox */}
+      {lightboxImage && (
+        <div
+          className="fixed inset-0 bg-black/90 z-[70] flex items-center justify-center p-4 cursor-pointer"
+          onClick={() => setLightboxImage(null)}
+          aria-label="Close lightbox"
+        >
+          <img
+            src={lightboxImage}
+            alt="Full size"
+            className="max-w-full max-h-full object-contain rounded shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          />
+          <button
+            type="button"
+            onClick={() => setLightboxImage(null)}
+            className="absolute top-4 right-4 w-10 h-10 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 text-white text-2xl font-light transition-colors cursor-pointer"
+            aria-label="Close"
+          >
+            ×
+          </button>
+        </div>
+      )}
+
+      {/* Convert / Merge Modal */}
+      {convertModalOpen && convertCandidate && (
+        <div className="fixed inset-0 bg-black/50 z-[60] flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full max-h-[90vh] overflow-y-auto">
+            <div className="p-6">
+              <h3 className="text-xl font-bold text-gray-900 mb-2">Convert Customer</h3>
+              <p className="text-gray-600 mb-4">
+                Converting <span className="font-semibold">{convertCandidate.name}</span> ({convertCandidate.email}). Choose an option:
+              </p>
+
+              {duplicateCustomers.length > 0 ? (
+                <>
+                  <p className="text-sm font-semibold text-gray-700 mb-2">Possible existing customers (same email or phone):</p>
+                  <div className="space-y-2 mb-4">
+                    {duplicateCustomers.map((ac) => (
+                      <div key={String(ac.id)} className="flex items-center justify-between gap-3 p-3 bg-gray-50 rounded-lg border border-gray-200">
+                        <div>
+                          <div className="font-semibold text-gray-900">{ac.name}</div>
+                          <div className="text-sm text-gray-600">{ac.email} • {ac.phone}</div>
+                        </div>
+                        <button type="button" onClick={() => handleMergeWithCustomer(ac)} disabled={convertLoading} className="px-3 py-1.5 bg-teal hover:bg-teal/90 disabled:opacity-50 text-white text-sm font-semibold rounded-lg cursor-pointer transition-colors shrink-0">
+                          Merge
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                  <p className="text-sm text-gray-500 mb-4">Or create a new customer:</p>
+                </>
+              ) : (
+                <p className="text-sm text-gray-500 mb-4">No existing customers found with matching email or phone.</p>
+              )}
+
+              <div className="flex gap-3">
+                <button type="button" onClick={() => { setConvertModalOpen(false); setConvertCandidate(null); setDuplicateCustomers([]); }} className="flex-1 px-4 py-2.5 border border-gray-300 rounded-lg text-gray-900 hover:bg-gray-100 font-semibold cursor-pointer transition-colors">
+                  Cancel
+                </button>
+                <button type="button" onClick={handleConvertToNewCustomer} disabled={convertLoading} className="flex-1 px-4 py-2.5 bg-orange hover:bg-orange/90 disabled:opacity-50 text-white font-semibold rounded-lg cursor-pointer transition-colors">
+                  {convertLoading ? "Processing..." : "Convert to New Customer"}
+                </button>
+              </div>
             </div>
           </div>
         </div>

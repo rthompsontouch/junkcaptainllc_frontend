@@ -24,6 +24,51 @@ function toApiCustomer(doc: { _id: mongoose.Types.ObjectId; toObject?: () => Rec
 router.get("/", async (req: Request, res: Response) => {
   try {
     const type = req.query.type as string | undefined;
+    const checkDuplicates = req.query.checkDuplicates as string | undefined;
+
+    if (checkDuplicates) {
+      const potential = await PotentialCustomer.findById(checkDuplicates);
+      if (!potential) {
+        res.json([]);
+        return;
+      }
+      const email = (potential.email || "").trim().toLowerCase();
+      const phone = (potential.phone || "").replace(/\D/g, "");
+      const seen = new Set<string>();
+      const ids: mongoose.Types.ObjectId[] = [];
+      if (email) {
+        const byEmail = await ActiveCustomer.find({
+          email: { $regex: new RegExp(`^${email.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}$`, "i") },
+        });
+        for (const d of byEmail) {
+          const id = d._id.toString();
+          if (!seen.has(id)) {
+            seen.add(id);
+            ids.push(d._id);
+          }
+        }
+      }
+      if (phone && phone.length >= 7) {
+        const phoneRegex = new RegExp(phone.split("").join("\\D*"), "i");
+        const byPhone = await ActiveCustomer.find({
+          phone: { $regex: phoneRegex },
+        });
+        for (const d of byPhone) {
+          const id = d._id.toString();
+          if (!seen.has(id)) {
+            seen.add(id);
+            ids.push(d._id);
+          }
+        }
+      }
+      if (ids.length === 0) {
+        res.json([]);
+        return;
+      }
+      const docs = await ActiveCustomer.find({ _id: { $in: ids } });
+      res.json(docs.map((d) => toApiCustomer(d)));
+      return;
+    }
 
     if (type === "potential") {
       const docs = await PotentialCustomer.find().sort({ createdAt: -1 });
@@ -100,6 +145,30 @@ router.put("/", async (req: Request, res: Response) => {
       doc.serviceNote = serviceRecord.note;
       await doc.save();
       res.json(toApiCustomer(doc));
+      return;
+    }
+
+    if (action === "merge") {
+      const { potentialId, activeId } = req.body;
+      const potential = await PotentialCustomer.findById(potentialId);
+      const active = await ActiveCustomer.findById(activeId);
+      if (!potential || !active) {
+        res.status(404).json({ error: "Customer not found" });
+        return;
+      }
+      const mergeDate = new Date().toISOString().split("T")[0];
+      const mergeNote = `Merged from quote request: ${(potential.notes || "").trim() || "No notes"}`;
+      active.serviceHistory = active.serviceHistory || [];
+      active.serviceHistory.unshift({ date: mergeDate, note: mergeNote });
+      active.lastServiceDate = mergeDate;
+      active.serviceNote = mergeNote;
+      if (potential.notes?.trim()) {
+        active.notes = [active.notes, potential.notes].filter(Boolean).join("\n\n---\n\n");
+      }
+      await active.save();
+      await PotentialCustomer.findByIdAndDelete(potentialId);
+      await Notification.deleteMany({ customerId: potentialId });
+      res.json(toApiCustomer(active));
       return;
     }
 
