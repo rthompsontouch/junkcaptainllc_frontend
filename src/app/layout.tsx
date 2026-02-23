@@ -48,8 +48,8 @@ export const metadata: Metadata = {
     telephone: true,
   },
   icons: {
-    icon: '/brand/logo/logo_circle.png',
-    apple: '/brand/logo/logo_circle.png',
+    icon: '/brand/logo_circle_favicon.png',
+    apple: '/brand/logo_circle_favicon.png',
   },
   openGraph: {
     type: "website",

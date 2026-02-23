@@ -7,7 +7,7 @@ import mongoose from "mongoose";
 import bcrypt from "bcryptjs";
 import { User } from "../src/lib/models/User";
 
-const EMAIL = process.env.SEED_ADMIN_EMAIL ?? "admin@junkcaptainllc.com";
+const EMAIL = process.env.SEED_ADMIN_EMAIL ?? "info@junkcaptainllc.com";
 const PASSWORD = process.env.SEED_ADMIN_PASSWORD ?? "Junk4God!";
 
 async function seed() {
