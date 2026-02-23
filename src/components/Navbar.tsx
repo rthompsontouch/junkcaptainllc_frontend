@@ -20,9 +20,18 @@ export default function Navbar() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
+  // Reset active section when leaving home page (e.g. going to /about)
   useEffect(() => {
+    if (pathname !== "/") {
+      setActiveSection("");
+    }
+  }, [pathname]);
+
+  useEffect(() => {
+    if (pathname !== "/") return; // Only observe sections on home page
+
     const sections = document.querySelectorAll("section[id]");
-    
+
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
@@ -42,13 +51,13 @@ export default function Navbar() {
     return () => {
       sections.forEach((section) => observer.unobserve(section));
     };
-  }, []);
+  }, [pathname]);
 
   const navLinks = [
-    { name: "Services", href: "#services" },
-    { name: "Pricing", href: "#quote" },
-    { name: "FAQ", href: "#faq" },
-    { name: "About", href: "/about" },
+    { name: "Services", href: "#services", isHash: true },
+    { name: "Pricing", href: "#quote", isHash: true },
+    { name: "FAQ", href: "#faq", isHash: true },
+    { name: "About", href: "/about", isHash: false },
   ];
 
   return (
@@ -134,16 +143,16 @@ export default function Navbar() {
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-8">
             {navLinks.map((link) => {
-              // Check if it's a route link or hash link
-              const isRouteLink = link.href.startsWith("/");
-              const isActive = isRouteLink 
-                ? pathname === link.href 
-                : activeSection === link.href.slice(1);
-              
+              // Hash links go to /#section when not on home; route links use href as-is
+              const href = link.isHash ? (pathname === "/" ? link.href : `/${link.href}`) : link.href;
+              const isActive = link.isHash
+                ? pathname === "/" && activeSection === link.href.slice(1)
+                : pathname === link.href;
+
               return (
                 <Link
                   key={link.name}
-                  href={link.href}
+                  href={href}
                   className={`text-white hover:text-orange transition-all duration-200 font-medium relative group ${
                     isActive ? "text-orange" : ""
                   }`}
@@ -158,7 +167,7 @@ export default function Navbar() {
               );
             })}
             <Link
-              href="#home"
+              href={pathname === "/" ? "#home" : "/#home"}
               className="bg-orange hover:bg-orange/90 text-white font-bold py-2 px-6 rounded-lg transition-colors duration-200"
             >
               Request Quote
@@ -202,16 +211,15 @@ export default function Navbar() {
         <div className="md:hidden bg-navy/95 backdrop-blur-sm border-t border-orange/20">
           <div className="px-2 pt-2 pb-3 space-y-1">
             {navLinks.map((link) => {
-              // Check if it's a route link or hash link
-              const isRouteLink = link.href.startsWith("/");
-              const isActive = isRouteLink 
-                ? pathname === link.href 
-                : activeSection === link.href.slice(1);
-              
+              const href = link.isHash ? (pathname === "/" ? link.href : `/${link.href}`) : link.href;
+              const isActive = link.isHash
+                ? pathname === "/" && activeSection === link.href.slice(1)
+                : pathname === link.href;
+
               return (
                 <Link
                   key={link.name}
-                  href={link.href}
+                  href={href}
                   onClick={() => setMobileMenuOpen(false)}
                   className={`block px-3 py-2 rounded-md text-white hover:bg-orange/10 hover:text-orange transition-colors duration-200 font-medium border-l-4 ${
                     isActive
@@ -224,7 +232,7 @@ export default function Navbar() {
               );
             })}
             <Link
-              href="#home"
+              href={pathname === "/" ? "#home" : "/#home"}
               onClick={() => setMobileMenuOpen(false)}
               className="block mx-3 my-2 bg-orange hover:bg-orange/90 text-white font-bold py-2 px-6 rounded-lg transition-colors duration-200 text-center"
             >

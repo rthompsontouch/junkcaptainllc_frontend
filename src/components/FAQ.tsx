@@ -7,10 +7,6 @@ export default function FAQ() {
 
   const faqs = [
     {
-      question: "How much does junk removal cost?",
-      answer: "Our pricing is based on the volume of junk removed. Single items start at $75, while a full truck load ranges from $400-$600. We provide free, no-obligation quotes over the phone or on-site. The final price is determined once we see the items in person.",
-    },
-    {
       question: "Do you offer same-day service?",
       answer: "Yes! We often have same-day availability. Call us in the morning, and we can frequently schedule your pickup for the same afternoon. We understand that timing can be crucial, especially for estate sales, moving deadlines, or renovations.",
     },
