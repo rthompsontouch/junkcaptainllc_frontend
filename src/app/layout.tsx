@@ -48,8 +48,8 @@ export const metadata: Metadata = {
     telephone: true,
   },
   icons: {
-    icon: '/brand/logo_circle_favicon.png',
-    apple: '/brand/logo_circle_favicon.png',
+    icon: '/brand/logo/logo_circle.png',
+    apple: '/brand/logo/logo_circle.png',
   },
   openGraph: {
     type: "website",
@@ -100,6 +100,8 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
+        <link rel="icon" href="/brand/logo/logo_circle.png" type="image/png" />
+        <link rel="apple-touch-icon" href="/brand/logo/logo_circle.png" />
         <StructuredData />
       </head>
       <body
