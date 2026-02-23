@@ -9,6 +9,8 @@ export default function sitemap(): MetadataRoute.Sitemap {
     'junk-removal-apex',
     'junk-removal-durham',
     'junk-removal-fuquay-varina',
+    'junk-removal-angier',
+    'junk-removal-lillington',
   ]
 
   return [

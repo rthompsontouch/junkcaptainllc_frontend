@@ -61,6 +61,22 @@ export default function StructuredData() {
           "@type": "State",
           "name": "North Carolina"
         }
+      },
+      {
+        "@type": "City",
+        "name": "Angier",
+        "containedInPlace": {
+          "@type": "State",
+          "name": "North Carolina"
+        }
+      },
+      {
+        "@type": "City",
+        "name": "Lillington",
+        "containedInPlace": {
+          "@type": "State",
+          "name": "North Carolina"
+        }
       }
     ],
     "openingHoursSpecification": [

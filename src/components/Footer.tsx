@@ -82,6 +82,12 @@ export default function Footer() {
               <li>
                 <Link href="/junk-removal-fuquay-varina" className="hover:text-orange transition-colors">Fuquay Varina</Link>
               </li>
+              <li>
+                <Link href="/junk-removal-angier" className="hover:text-orange transition-colors">Angier</Link>
+              </li>
+              <li>
+                <Link href="/junk-removal-lillington" className="hover:text-orange transition-colors">Lillington</Link>
+              </li>
             </ul>
           </div>
 
