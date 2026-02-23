@@ -75,7 +75,7 @@ export default function Navbar() {
             </p>
             <div className="flex items-center gap-4">
               <a
-                href="mailto:hello@junkcaptainllc.com"
+                href="mailto:info@junkcaptainllc.com"
                 className="hover:text-orange transition-colors flex items-center gap-1"
               >
                 <svg
@@ -91,7 +91,7 @@ export default function Navbar() {
                     d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
                   />
                 </svg>
-                hello@junkcaptainllc.com
+                info@junkcaptainllc.com
               </a>
               <a
                 href="tel:+19108081125"

@@ -8,7 +8,7 @@ export default function StructuredData() {
     "logo": "https://junkcaptainllc.com/brand/logo/logo_circle.png",
     "url": "https://junkcaptainllc.com",
     "telephone": "+19108081125",
-    "email": "hello@junkcaptainllc.com",
+    "email": "info@junkcaptainllc.com",
     "priceRange": "$$",
     "address": {
       "@type": "PostalAddress",

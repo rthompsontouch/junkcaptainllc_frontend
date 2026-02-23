@@ -112,8 +112,8 @@ export default function Footer() {
                 </svg>
                 <div>
                   <div className="text-sm text-gray-400 mb-1">Email Us</div>
-                  <a href="mailto:hello@junkcaptainllc.com" className="text-white hover:text-orange transition-colors">
-                    hello@junkcaptainllc.com
+                  <a href="mailto:info@junkcaptainllc.com" className="text-white hover:text-orange transition-colors">
+                    info@junkcaptainllc.com
                   </a>
                 </div>
               </li>
