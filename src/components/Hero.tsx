@@ -94,7 +94,7 @@ export default function Hero() {
       <div className="absolute inset-0 z-0">
         <Image
           src="/hero/lance-grandahl-VSXT9AV19Is-unsplash.jpg"
-          alt="Junk removal service"
+          alt="Professional junk removal truck and crew serving Raleigh, Cary, Apex, Durham - Junk Captain LLC"
           fill
           className="object-cover"
           priority
@@ -296,7 +296,7 @@ export default function Hero() {
         <div className="relative w-48 h-48 md:w-64 md:h-64 lg:w-80 lg:h-80">
           <Image
             src="/hero/logo_original.png"
-            alt="Junk Captain LLC Logo"
+            alt="Junk Captain LLC - Professional junk removal Raleigh NC"
             fill
             className="object-contain drop-shadow-2xl"
           />

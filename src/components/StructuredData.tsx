@@ -84,6 +84,13 @@ export default function StructuredData() {
       // "https://www.facebook.com/junkcaptainllc",
       // "https://www.instagram.com/junkcaptainllc"
     ],
+    // Add aggregateRating when you have real Google/review-site reviews (required: ratingValue, reviewCount)
+    // "aggregateRating": {
+    //   "@type": "AggregateRating",
+    //   "ratingValue": "4.9",
+    //   "reviewCount": "50",
+    //   "bestRating": "5"
+    // },
     "description": "Professional junk removal services in Raleigh, Cary, Apex, Durham, and Fuquay Varina. Fast, reliable, eco-friendly disposal. Same-day service available. Licensed and insured.",
     "hasOfferCatalog": {
       "@type": "OfferCatalog",

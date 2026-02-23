@@ -2,10 +2,7 @@
 
 import { useState } from "react";
 
-export default function FAQ() {
-  const [openIndex, setOpenIndex] = useState<number | null>(0);
-
-  const faqs = [
+const faqs = [
     {
       question: "Do you offer same-day service?",
       answer: "Yes! We often have same-day availability. Call us in the morning, and we can frequently schedule your pickup for the same afternoon. We understand that timing can be crucial, especially for estate sales, moving deadlines, or renovations.",
@@ -44,12 +41,32 @@ export default function FAQ() {
     },
   ];
 
+const faqSchema = {
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  mainEntity: faqs.map((faq) => ({
+    "@type": "Question",
+    name: faq.question,
+    acceptedAnswer: {
+      "@type": "Answer",
+      text: faq.answer,
+    },
+  })),
+};
+
+export default function FAQ() {
+  const [openIndex, setOpenIndex] = useState<number | null>(0);
+
   const toggleFAQ = (index: number) => {
     setOpenIndex(openIndex === index ? null : index);
   };
 
   return (
     <section id="faq" className="py-20 px-4 bg-gray-50">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
+      />
       <div className="max-w-4xl mx-auto">
         {/* Section Header */}
         <div className="text-center mb-16">

@@ -62,7 +62,7 @@ export default function LoginPage() {
             <div className="relative w-24 h-24">
               <Image
                 src="/brand/logo/logo_circle.png"
-                alt="Junk Captain LLC"
+                alt="Junk Captain LLC - Raleigh junk removal login"
                 fill
                 className="object-contain"
               />

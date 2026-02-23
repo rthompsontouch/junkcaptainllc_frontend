@@ -132,7 +132,7 @@ export default function Navbar() {
             <div className="relative h-24 w-24 -mb-4">
               <Image
                 src="/brand/logo/logo_circle.png"
-                alt="Junk Captain LLC"
+                alt="Junk Captain LLC - Junk removal Raleigh Cary Apex Durham"
                 fill
                 className="object-contain"
                 priority

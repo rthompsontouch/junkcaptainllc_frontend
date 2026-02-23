@@ -84,6 +84,9 @@ export const metadata: Metadata = {
       'max-snippet': -1,
     },
   },
+  alternates: {
+    canonical: "https://junkcaptainllc.com",
+  },
   verification: {
     // Add your verification codes here later
     // google: 'your-google-verification-code',

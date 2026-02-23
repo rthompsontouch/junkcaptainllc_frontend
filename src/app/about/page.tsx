@@ -4,6 +4,9 @@ import type { Metadata } from "next";
 export const metadata: Metadata = {
   title: "About Us",
   description: "Learn about Junk Captain LLC, the Triangle area's trusted junk removal service since 2026. Over a decade of combined experience. Fair, transparent pricing with no hidden fees. Raleigh, Cary, Apex, Durham, and Fuquay Varina.",
+  alternates: {
+    canonical: "https://junkcaptainllc.com/about",
+  },
   keywords: [
     "about junk captain",
     "junk removal company Raleigh",

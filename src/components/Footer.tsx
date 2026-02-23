@@ -13,7 +13,7 @@ export default function Footer() {
               <div className="relative w-16 h-16">
                 <Image
                   src="/brand/logo/logo_circle.png"
-                  alt="Junk Captain LLC"
+                  alt="Junk Captain LLC - Triangle area junk removal"
                   fill
                   className="object-contain"
                 />
@@ -55,19 +55,33 @@ export default function Footer() {
                   About Us
                 </Link>
               </li>
+              <li>
+                <Link href="/blog" className="text-gray-300 hover:text-orange transition-colors">
+                  Blog & Tips
+                </Link>
+              </li>
             </ul>
           </div>
 
-          {/* Services */}
+          {/* Service Areas & Services */}
           <div>
-            <h3 className="text-lg font-bold mb-4">Our Services</h3>
+            <h3 className="text-lg font-bold mb-4">Service Areas</h3>
             <ul className="space-y-3 text-gray-300 text-sm">
-              <li>Furniture Removal</li>
-              <li>Appliance Removal</li>
-              <li>Construction Debris</li>
-              <li>Yard Waste & Debris</li>
-              <li>Estate Cleanouts</li>
-              <li>Garage Cleanout</li>
+              <li>
+                <Link href="/junk-removal-raleigh" className="hover:text-orange transition-colors">Raleigh</Link>
+              </li>
+              <li>
+                <Link href="/junk-removal-cary" className="hover:text-orange transition-colors">Cary</Link>
+              </li>
+              <li>
+                <Link href="/junk-removal-apex" className="hover:text-orange transition-colors">Apex</Link>
+              </li>
+              <li>
+                <Link href="/junk-removal-durham" className="hover:text-orange transition-colors">Durham</Link>
+              </li>
+              <li>
+                <Link href="/junk-removal-fuquay-varina" className="hover:text-orange transition-colors">Fuquay Varina</Link>
+              </li>
             </ul>
           </div>
 
