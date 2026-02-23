@@ -130,6 +130,17 @@ export default function Footer() {
               </Link>
             </div>
           </div>
+          <div className="text-center mt-4 pt-4 border-t border-white/5 text-sm text-gray-500">
+            This website was designed by{" "}
+            <a
+              href="https://www.thewebprism.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-orange hover:text-orange/80 transition-colors font-medium"
+            >
+              TheWebPrism
+            </a>
+          </div>
         </div>
       </div>
     </footer>

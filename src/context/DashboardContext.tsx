@@ -120,7 +120,7 @@ export const DashboardProvider = ({ children }: DashboardProviderProps) => {
           router.replace("/login");
           return;
         }
-        if (status >= 500) throw new Error("Server error. Is the backend running? (npm run dev:backend)");
+        if (status >= 500) throw new Error("Server error. Please try again later.");
         throw new Error("Failed to load customers");
       }
 
@@ -139,7 +139,7 @@ export const DashboardProvider = ({ children }: DashboardProviderProps) => {
       const msg = err instanceof Error ? err.message : "Unknown error";
       const message =
         /fetch|network|ECONNREFUSED/i.test(msg)
-          ? "Backend not reachable. Start it with: npm run dev:backend"
+          ? "Unable to connect. Please check your connection and try again."
           : msg;
       setState((prev) => ({
         ...prev,
@@ -180,7 +180,7 @@ export const DashboardProvider = ({ children }: DashboardProviderProps) => {
       const msg = err instanceof Error ? err.message : "Unknown error";
       const message =
         /fetch|network|ECONNREFUSED/i.test(msg)
-          ? "Backend not reachable. Start it with: npm run dev:backend"
+          ? "Unable to connect. Please check your connection and try again."
           : msg;
       setState((prev) => ({
         ...prev,

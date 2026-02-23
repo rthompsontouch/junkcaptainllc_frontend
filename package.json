@@ -2,33 +2,35 @@
   "name": "junkcaptain-monorepo",
   "version": "0.1.0",
   "private": true,
-  "workspaces": [
-    "backend"
-  ],
   "scripts": {
     "dev": "next dev",
-    "dev:backend": "npm run dev --workspace=junkcaptain-backend",
     "build": "next build",
-    "build:backend": "npm run build --workspace=junkcaptain-backend",
     "start": "next start",
-    "start:backend": "npm run start --workspace=junkcaptain-backend",
-    "seed": "npm run seed --workspace=junkcaptain-backend",
+    "seed": "npx tsx scripts/seedAdmin.ts",
     "lint": "eslint"
   },
   "dependencies": {
+    "bcryptjs": "^2.4.3",
     "cloudinary": "^2.9.0",
+    "jsonwebtoken": "^9.0.2",
+    "mongoose": "^8.8.3",
     "next": "16.1.6",
     "react": "19.2.3",
-    "react-dom": "19.2.3"
+    "react-dom": "19.2.3",
+    "resend": "^4.0.1"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
+    "@types/bcryptjs": "^2.4.6",
+    "@types/jsonwebtoken": "^9.0.7",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "dotenv": "^16.4.5",
     "eslint": "^9",
     "eslint-config-next": "16.1.6",
     "tailwindcss": "^4",
+    "tsx": "^4.19.2",
     "typescript": "^5"
   }
 }
