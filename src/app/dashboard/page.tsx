@@ -24,6 +24,7 @@ interface PotentialCustomer {
 interface ServiceRecord {
   date: string;
   note: string;
+  imageUrls?: string[];
 }
 
 interface ActiveCustomer {
@@ -37,6 +38,7 @@ interface ActiveCustomer {
   serviceNote: string;
   serviceHistory?: ServiceRecord[];
   images: number;
+  imageUrls?: string[];
   notes: string;
 }
 
