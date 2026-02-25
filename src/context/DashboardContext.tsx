@@ -26,6 +26,7 @@ export interface PotentialCustomer {
 export interface ServiceRecord {
   date: string;
   note: string;
+  imageUrls?: string[];
 }
 
 export interface ActiveCustomer {
@@ -39,6 +40,7 @@ export interface ActiveCustomer {
   serviceNote: string;
   serviceHistory?: ServiceRecord[];
   images: number;
+  imageUrls?: string[];
   notes: string;
 }
 

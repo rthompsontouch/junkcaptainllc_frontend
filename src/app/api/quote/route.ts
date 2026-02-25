@@ -49,11 +49,18 @@ export async function POST(request: NextRequest) {
     await connectDB();
 
     const imageUrls: string[] = [];
-    if (
+    const hasCloudinary =
       process.env.CLOUDINARY_CLOUD_NAME &&
       process.env.CLOUDINARY_API_KEY &&
-      process.env.CLOUDINARY_API_SECRET
-    ) {
+      process.env.CLOUDINARY_API_SECRET;
+
+    if (validImages.length > 0 && !hasCloudinary) {
+      console.warn(
+        "Cloudinary not configured: Add CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, CLOUDINARY_API_SECRET to backend/.env (or project root .env.local)"
+      );
+    }
+
+    if (hasCloudinary) {
       for (const file of validImages) {
         try {
           const buffer = Buffer.from(await file.arrayBuffer());

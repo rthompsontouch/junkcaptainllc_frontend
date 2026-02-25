@@ -1,3 +1,6 @@
+const path = require("path");
+require("dotenv").config({ path: path.resolve(process.cwd(), "backend", ".env") });
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   async rewrites() {
@@ -7,6 +10,15 @@ const nextConfig = {
         destination: 'http://localhost:5000/api/:path*', // Proxy to backend
       },
     ];
+  },
+  images: {
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'res.cloudinary.com',
+        pathname: '/**',
+      },
+    ],
   },
 };
 

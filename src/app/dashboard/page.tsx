@@ -519,26 +519,53 @@ export default function DashboardPage() {
                   {/* Service History */}
                   <div>
                     <label className="block text-sm font-semibold mb-2 text-gray-900">Service History</label>
-                    <div className="space-y-2 max-h-40 overflow-y-auto">
+                    <div className="space-y-2 max-h-60 overflow-y-auto">
                       {(() => {
-                        const history = (selectedCustomer as ActiveCustomer).serviceHistory || [];
-                        const fallback = (selectedCustomer as ActiveCustomer).lastServiceDate
-                          ? [{ date: (selectedCustomer as ActiveCustomer).lastServiceDate, note: (selectedCustomer as ActiveCustomer).serviceNote || "" }]
+                        const ac = selectedCustomer as ActiveCustomer;
+                        const history = ac.serviceHistory || [];
+                        const fallback = ac.lastServiceDate
+                          ? [{ date: ac.lastServiceDate, note: ac.serviceNote || "", imageUrls: ac.imageUrls }]
                           : [];
                         const list = history.length > 0 ? history : fallback;
                         return list.length === 0 ? (
                           <p className="text-sm text-gray-500 py-2">No service history yet.</p>
                         ) : (
                           list.map((svc, i) => (
-                            <div key={i} className="flex gap-3 p-3 bg-gray-50 rounded-lg border border-gray-100">
-                              <div className="font-medium text-gray-900 shrink-0">{new Date(svc.date).toLocaleDateString()}</div>
-                              <div className="text-sm text-gray-600">{svc.note || "—"}</div>
+                            <div key={i} className="flex flex-col gap-2 p-3 bg-gray-50 rounded-lg border border-gray-100">
+                              <div className="flex gap-3">
+                                <div className="font-medium text-gray-900 shrink-0">{new Date(svc.date).toLocaleDateString()}</div>
+                                <div className="text-sm text-gray-600">{svc.note || "—"}</div>
+                              </div>
+                              {svc.imageUrls?.length ? (
+                                <div className="grid grid-cols-4 gap-1.5 mt-1">
+                                  {svc.imageUrls.map((url, j) => (
+                                    <button key={j} type="button" onClick={() => setLightboxImage(url)} className="aspect-square rounded border border-gray-200 overflow-hidden bg-gray-100 hover:opacity-90 transition-opacity cursor-pointer">
+                                      <img src={url} alt={`Photo ${j + 1}`} className="w-full h-full object-cover pointer-events-none" />
+                                    </button>
+                                  ))}
+                                </div>
+                              ) : null}
                             </div>
                           ))
                         );
                       })()}
                     </div>
                   </div>
+
+                  {/* Photos (active customers - from conversion/merge) */}
+                  {(selectedCustomer as ActiveCustomer).imageUrls?.length ? (
+                    <div>
+                      <label className="block text-sm font-semibold mb-2 text-gray-900">Quote Photos (from conversion)</label>
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+                        {((selectedCustomer as ActiveCustomer).imageUrls ?? []).map((url, i) => (
+                          <button key={i} type="button" onClick={() => setLightboxImage(url)} className="aspect-square rounded-lg border-2 border-gray-200 overflow-hidden bg-gray-100 hover:opacity-90 transition-opacity cursor-pointer">
+                            <img src={url} alt={`Junk photo ${i + 1}`} className="w-full h-full object-cover pointer-events-none" />
+                          </button>
+                        ))}
+                      </div>
+                      <p className="text-xs text-gray-600 mt-1">Click a photo to view full size.</p>
+                    </div>
+                  ) : null}
 
                   {/* Add new service */}
                   <div className="border-t border-gray-200 pt-4">
@@ -554,14 +581,14 @@ export default function DashboardPage() {
                 </>
               )}
 
-              {/* Junk photos (potential customers only) - up to 4 from quote form */}
-              {activeTab === "potential" && isPotentialCustomer(selectedCustomer) && selectedCustomer.images > 0 && (
+              {/* Junk photos (potential customers) - up to 4 from quote form */}
+              {activeTab === "potential" && isPotentialCustomer(selectedCustomer) && (selectedCustomer.images > 0 || (selectedCustomer as PotentialCustomer).imageUrls?.length) && (
                 <div>
-                  <label className="block text-sm font-semibold mb-2 text-gray-900">Photos ({selectedCustomer.images} uploaded)</label>
+                  <label className="block text-sm font-semibold mb-2 text-gray-900">Photos ({(selectedCustomer as PotentialCustomer).imageUrls?.length ?? selectedCustomer.images} uploaded)</label>
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
                     {((selectedCustomer as PotentialCustomer).imageUrls?.length
                       ? (selectedCustomer as PotentialCustomer).imageUrls!
-                      : Array(selectedCustomer.images).fill(null)
+                      : Array(Math.max(selectedCustomer.images, 0)).fill(null)
                     ).map((url, i) => (
                       <div key={i} className="aspect-square rounded-lg border-2 border-gray-200 overflow-hidden bg-gray-100">
                         {url ? (

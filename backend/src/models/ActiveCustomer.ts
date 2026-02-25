@@ -3,6 +3,7 @@ import mongoose, { Schema, Document, Model } from "mongoose";
 export interface IServiceRecord {
   date: string;
   note: string;
+  imageUrls?: string[];
 }
 
 export interface IActiveCustomer extends Document {
@@ -22,7 +23,11 @@ export interface IActiveCustomer extends Document {
 }
 
 const ServiceRecordSchema = new Schema<IServiceRecord>(
-  { date: { type: String, required: true }, note: { type: String, default: "" } },
+  {
+    date: { type: String, required: true },
+    note: { type: String, default: "" },
+    imageUrls: [{ type: String }],
+  },
   { _id: false }
 );
 

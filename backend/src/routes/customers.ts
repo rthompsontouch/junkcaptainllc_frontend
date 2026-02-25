@@ -158,10 +158,13 @@ router.put("/", async (req: Request, res: Response) => {
       }
       const mergeDate = new Date().toISOString().split("T")[0];
       const mergeNote = `Merged from quote request: ${(potential.notes || "").trim() || "No notes"}`;
+      const mergeImageUrls = potential.imageUrls ?? [];
       active.serviceHistory = active.serviceHistory || [];
-      active.serviceHistory.unshift({ date: mergeDate, note: mergeNote });
+      active.serviceHistory.unshift({ date: mergeDate, note: mergeNote, imageUrls: mergeImageUrls });
       active.lastServiceDate = mergeDate;
       active.serviceNote = mergeNote;
+      active.imageUrls = [...(active.imageUrls || []), ...mergeImageUrls];
+      active.images = active.imageUrls.length;
       if (potential.notes?.trim()) {
         active.notes = [active.notes, potential.notes].filter(Boolean).join("\n\n---\n\n");
       }
@@ -181,6 +184,7 @@ router.put("/", async (req: Request, res: Response) => {
 
       const firstServiceDate = new Date().toISOString().split("T")[0];
       const firstServiceNote = "Converted from potential customer";
+      const firstServiceImages = doc.imageUrls ?? [];
       const active = await ActiveCustomer.create({
         name: doc.name,
         email: doc.email,
@@ -189,7 +193,7 @@ router.put("/", async (req: Request, res: Response) => {
         service: doc.service,
         lastServiceDate: firstServiceDate,
         serviceNote: firstServiceNote,
-        serviceHistory: [{ date: firstServiceDate, note: firstServiceNote }],
+        serviceHistory: [{ date: firstServiceDate, note: firstServiceNote, imageUrls: firstServiceImages }],
         images: doc.images,
         imageUrls: doc.imageUrls,
         notes: doc.notes,
