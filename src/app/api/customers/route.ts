@@ -104,7 +104,49 @@ export async function POST(request: NextRequest) {
   try {
     await connectDB();
 
-    const { name, email, phone, address, service, images, notes } = await request.json();
+    const body = await request.json();
+    const type = body.type === "active" ? "active" : "potential";
+
+    if (type === "active") {
+      const {
+        name,
+        email,
+        phone,
+        address,
+        service,
+        notes,
+        lastServiceDate,
+        serviceNote,
+      } = body;
+      const n = String(name ?? "").trim();
+      const em = String(email ?? "").trim();
+      const ph = String(phone ?? "").trim();
+      const addr = String(address ?? "").trim();
+      if (!n || !em || !ph || !addr) {
+        return NextResponse.json(
+          { error: "Name, email, phone, and address are required" },
+          { status: 400 }
+        );
+      }
+      const today = new Date().toISOString().split("T")[0];
+      const lastDate = String(lastServiceDate ?? "").trim() || today;
+      const sNote = String(serviceNote ?? "").trim() || "Added manually";
+      const doc = await ActiveCustomer.create({
+        name: n,
+        email: em,
+        phone: ph,
+        address: addr,
+        service: String(service ?? "").trim() || "Customer",
+        lastServiceDate: lastDate,
+        serviceNote: sNote,
+        serviceHistory: [{ date: lastDate, note: sNote }],
+        images: 0,
+        notes: String(notes ?? "").trim(),
+      });
+      return NextResponse.json(toApiCustomer(doc), { status: 201 });
+    }
+
+    const { name, email, phone, address, service, images, notes } = body;
 
     const doc = await PotentialCustomer.create({
       name: name ?? "",

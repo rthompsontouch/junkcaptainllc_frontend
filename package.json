@@ -7,6 +7,7 @@
     "build": "next build",
     "start": "next start",
     "seed": "npx tsx scripts/seedAdmin.ts",
+    "retry-quote": "npx tsx scripts/retryQuoteFailure.ts",
     "lint": "eslint"
   },
   "dependencies": {

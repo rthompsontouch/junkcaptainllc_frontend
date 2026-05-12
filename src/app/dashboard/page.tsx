@@ -6,7 +6,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useDashboard } from "@/context/DashboardContext";
 import { useAuth } from "@/context/AuthContext";
-import type { Notification } from "@/context/DashboardContext";
+import type { Notification, QuoteFailureLogEntry } from "@/context/DashboardContext";
 
 interface PotentialCustomer {
   id: string | number;
@@ -58,6 +58,8 @@ export default function DashboardPage() {
     activeCustomers,
     notifications,
     unreadNotifications,
+    quoteFailures,
+    loadingQuoteFailures,
     updateCustomer,
     deleteCustomer,
     convertToCustomer,
@@ -65,6 +67,10 @@ export default function DashboardPage() {
     mergeWithCustomer,
     addServiceRecord,
     markNotificationRead,
+    createCustomer,
+    createActiveCustomer,
+    fetchQuoteFailures,
+    retryQuoteFailure,
   } = useDashboard();
   const { user, logout, token } = useAuth();
   const router = useRouter();
@@ -72,7 +78,22 @@ export default function DashboardPage() {
   const [mounted, setMounted] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
-  const [activeTab, setActiveTab] = useState<"potential" | "customers">("potential");
+  const [activeTab, setActiveTab] = useState<"potential" | "customers" | "failures">("potential");
+  const [failuresUnresolvedOnly, setFailuresUnresolvedOnly] = useState(true);
+  const [manualAddOpen, setManualAddOpen] = useState(false);
+  const [manualAddKind, setManualAddKind] = useState<"potential" | "active">("potential");
+  const [manualAddForm, setManualAddForm] = useState({
+    name: "",
+    email: "",
+    phone: "",
+    address: "",
+    service: "",
+    notes: "",
+    lastServiceDate: "",
+    serviceNote: "",
+  });
+  const [manualAddSaving, setManualAddSaving] = useState(false);
+  const [retryingFailureId, setRetryingFailureId] = useState<string | null>(null);
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editForm, setEditForm] = useState<Partial<Customer>>({});
@@ -117,6 +138,11 @@ export default function DashboardPage() {
     return () => window.removeEventListener("keydown", handleKey);
   }, [lightboxImage]);
 
+  useEffect(() => {
+    if (!mounted || !token || activeTab !== "failures") return;
+    fetchQuoteFailures({ unresolvedOnly: failuresUnresolvedOnly });
+  }, [mounted, token, activeTab, failuresUnresolvedOnly, fetchQuoteFailures]);
+
   // Avoid hydration mismatch: server and initial client render the same loading state
   if (!mounted) {
     return (
@@ -128,7 +154,7 @@ export default function DashboardPage() {
 
   if (!token) return null;
 
-  const currentList = activeTab === "potential" ? potentialCustomers : activeCustomers;
+  const currentList = activeTab === "potential" ? potentialCustomers : activeTab === "customers" ? activeCustomers : [];
   const filteredList = currentList.filter(
     (customer) =>
       customer.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -136,6 +162,79 @@ export default function DashboardPage() {
       customer.phone.includes(searchQuery) ||
       customer.address.toLowerCase().includes(searchQuery.toLowerCase())
   );
+
+  const filteredFailures = quoteFailures.filter((row: QuoteFailureLogEntry) => {
+    if (!searchQuery.trim()) return true;
+    const q = searchQuery.toLowerCase();
+    return (
+      row.name.toLowerCase().includes(q) ||
+      row.email.toLowerCase().includes(q) ||
+      row.phone.includes(searchQuery) ||
+      row.requestId.toLowerCase().includes(q) ||
+      row.errorMessage.toLowerCase().includes(q) ||
+      row.stage.toLowerCase().includes(q)
+    );
+  });
+
+  const openManualAdd = (kind: "potential" | "active") => {
+    setManualAddKind(kind);
+    setManualAddForm({
+      name: "",
+      email: "",
+      phone: "",
+      address: "",
+      service: kind === "potential" ? "Quote Request" : "Customer",
+      notes: "",
+      lastServiceDate: new Date().toISOString().split("T")[0],
+      serviceNote: "",
+    });
+    setManualAddOpen(true);
+  };
+
+  const handleManualAddSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setManualAddSaving(true);
+    try {
+      if (manualAddKind === "potential") {
+        await createCustomer({
+          name: manualAddForm.name,
+          email: manualAddForm.email,
+          phone: manualAddForm.phone,
+          address: manualAddForm.address,
+          service: manualAddForm.service || "Quote Request",
+          notes: manualAddForm.notes,
+          images: 0,
+        });
+      } else {
+        await createActiveCustomer({
+          name: manualAddForm.name,
+          email: manualAddForm.email,
+          phone: manualAddForm.phone,
+          address: manualAddForm.address,
+          service: manualAddForm.service || "Customer",
+          notes: manualAddForm.notes,
+          lastServiceDate: manualAddForm.lastServiceDate || undefined,
+          serviceNote: manualAddForm.serviceNote || undefined,
+        });
+      }
+      setManualAddOpen(false);
+    } catch (err) {
+      alert(err instanceof Error ? err.message : "Could not save customer");
+    } finally {
+      setManualAddSaving(false);
+    }
+  };
+
+  const handleRetryFailure = async (id: string) => {
+    setRetryingFailureId(id);
+    try {
+      await retryQuoteFailure(id);
+    } catch (e) {
+      alert(e instanceof Error ? e.message : "Retry failed");
+    } finally {
+      setRetryingFailureId(null);
+    }
+  };
 
   const stats = {
     potential: potentialCustomers.length,
@@ -241,6 +340,37 @@ export default function DashboardPage() {
   };
 
   const handleExport = () => {
+    if (activeTab === "failures") {
+      if (filteredFailures.length === 0) {
+        alert("No rows to export");
+        return;
+      }
+      const headers = ["ID", "Request ID", "When", "Name", "Email", "Phone", "Stage", "HTTP", "Error", "Resolved", "Saved lead ID"];
+      const csvRows = [
+        headers.join(","),
+        ...filteredFailures.map((row) =>
+          [
+            row.id,
+            row.requestId,
+            row.createdAt,
+            `"${row.name.replace(/"/g, '""')}"`,
+            row.email,
+            `"${row.phone.replace(/"/g, '""')}"`,
+            row.stage,
+            row.httpStatus,
+            `"${row.errorMessage.replace(/"/g, '""')}"`,
+            row.resolved ? "yes" : "no",
+            row.potentialCustomerId ?? "",
+          ].join(",")
+        ),
+      ];
+      const blob = new Blob([csvRows.join("\n")], { type: "text/csv;charset=utf-8;" });
+      const link = document.createElement("a");
+      link.href = URL.createObjectURL(blob);
+      link.download = `junk-captain-quote-failures-${new Date().toISOString().split("T")[0]}.csv`;
+      link.click();
+      return;
+    }
     if (filteredList.length === 0) {
       alert("No customers to export");
       return;
@@ -417,20 +547,97 @@ export default function DashboardPage() {
 
           <div className="mb-6">
             <div className="border-b border-gray-200">
-              <nav className="-mb-px flex gap-3 md:gap-6">
+              <nav className="-mb-px flex flex-wrap gap-3 md:gap-6">
                 <button type="button" onClick={() => setActiveTab("potential")} className={`py-3 md:py-4 px-1 border-b-2 font-medium text-sm cursor-pointer ${activeTab === "potential" ? "border-orange text-orange" : "border-transparent text-gray-600 hover:text-gray-900"}`}>Potential Customers ({stats.potential})</button>
                 <button type="button" onClick={() => setActiveTab("customers")} className={`py-3 md:py-4 px-1 border-b-2 font-medium text-sm cursor-pointer ${activeTab === "customers" ? "border-orange text-orange" : "border-transparent text-gray-600 hover:text-gray-900"}`}>Active Customers ({stats.customers})</button>
+                <button type="button" onClick={() => setActiveTab("failures")} className={`py-3 md:py-4 px-1 border-b-2 font-medium text-sm cursor-pointer ${activeTab === "failures" ? "border-orange text-orange" : "border-transparent text-gray-600 hover:text-gray-900"}`}>Quote issues</button>
               </nav>
             </div>
           </div>
 
           <div className="bg-white p-4 md:p-6 rounded-xl shadow-sm border border-gray-200 mb-6">
-            <div className="flex gap-4">
-              <input type="text" placeholder="Search..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="flex-1 pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange text-gray-900 placeholder:text-gray-500" />
-              <button type="button" onClick={handleExport} className="px-4 md:px-6 py-2 bg-teal hover:bg-teal/90 text-white font-medium rounded-lg cursor-pointer transition-colors">Export</button>
+            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 sm:items-center">
+              <input type="text" placeholder={activeTab === "failures" ? "Search logs (name, email, request id)..." : "Search..."} value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="flex-1 min-w-0 pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange text-gray-900 placeholder:text-gray-500" />
+              {activeTab === "failures" && (
+                <label className="flex items-center gap-2 text-sm text-gray-700 whitespace-nowrap cursor-pointer">
+                  <input type="checkbox" checked={failuresUnresolvedOnly} onChange={(e) => setFailuresUnresolvedOnly(e.target.checked)} className="rounded border-gray-300 text-orange focus:ring-orange" />
+                  Unresolved only
+                </label>
+              )}
+              <div className="flex flex-wrap gap-2">
+                {activeTab !== "failures" && (
+                  <>
+                    <button type="button" onClick={() => openManualAdd("potential")} className="px-3 md:px-4 py-2 bg-navy hover:bg-navy/90 text-white font-medium rounded-lg cursor-pointer transition-colors text-sm">Add lead</button>
+                    <button type="button" onClick={() => openManualAdd("active")} className="px-3 md:px-4 py-2 bg-orange hover:bg-orange/90 text-white font-medium rounded-lg cursor-pointer transition-colors text-sm">Add customer</button>
+                  </>
+                )}
+                {activeTab === "failures" && (
+                  <button type="button" onClick={() => fetchQuoteFailures({ unresolvedOnly: failuresUnresolvedOnly })} disabled={loadingQuoteFailures} className="px-3 md:px-4 py-2 border border-gray-300 text-gray-800 font-medium rounded-lg cursor-pointer hover:bg-gray-50 transition-colors text-sm disabled:opacity-50">
+                    {loadingQuoteFailures ? "Refreshing…" : "Refresh"}
+                  </button>
+                )}
+                <button type="button" onClick={handleExport} className="px-4 md:px-6 py-2 bg-teal hover:bg-teal/90 text-white font-medium rounded-lg cursor-pointer transition-colors">Export</button>
+              </div>
             </div>
           </div>
 
+          {activeTab === "failures" ? (
+            <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+              {loadingQuoteFailures && quoteFailures.length === 0 ? (
+                <div className="p-12 text-center text-gray-500">Loading…</div>
+              ) : filteredFailures.length === 0 ? (
+                <div className="p-12 text-center text-gray-500">No quote failure logs match this filter.</div>
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead className="bg-gray-50 border-b border-gray-200">
+                      <tr>
+                        <th className="px-4 py-3 text-left font-semibold text-gray-800">When</th>
+                        <th className="px-4 py-3 text-left font-semibold text-gray-800">Contact</th>
+                        <th className="px-4 py-3 text-left font-semibold text-gray-800">Stage</th>
+                        <th className="px-4 py-3 text-left font-semibold text-gray-800">Error</th>
+                        <th className="px-4 py-3 text-left font-semibold text-gray-800">Ref</th>
+                        <th className="px-4 py-3 text-right font-semibold text-gray-800">Action</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-200">
+                      {filteredFailures.map((row) => (
+                        <tr key={row.id} className={row.resolved ? "bg-gray-50/80" : ""}>
+                          <td className="px-4 py-3 text-gray-700 whitespace-nowrap">{new Date(row.createdAt).toLocaleString()}</td>
+                          <td className="px-4 py-3">
+                            <div className="font-medium text-gray-900">{row.name || "—"}</div>
+                            <div className="text-gray-600">{row.email}</div>
+                            <div className="text-gray-600">{row.phone}</div>
+                            {row.address ? <div className="text-gray-500 text-xs mt-1 max-w-xs truncate" title={row.address}>{row.address}</div> : null}
+                          </td>
+                          <td className="px-4 py-3 text-gray-800">
+                            <span className="font-mono text-xs">{row.stage}</span>
+                            <div className="text-xs text-gray-500">HTTP {row.httpStatus}</div>
+                            {row.potentialCustomerId ? <div className="text-xs text-teal-700 mt-1">Lead id: {row.potentialCustomerId}</div> : null}
+                          </td>
+                          <td className="px-4 py-3 text-gray-700 max-w-md">
+                            <div className="line-clamp-3" title={row.errorMessage}>{row.errorMessage}</div>
+                            {row.message ? <div className="text-xs text-gray-500 mt-1 line-clamp-2" title={row.message}>Note: {row.message}</div> : null}
+                            {row.imageUrls?.length ? <div className="text-xs text-gray-500 mt-1">{row.imageUrls.length} photo URL(s) stored</div> : null}
+                          </td>
+                          <td className="px-4 py-3 font-mono text-xs text-gray-600 break-all max-w-[140px]">{row.requestId}</td>
+                          <td className="px-4 py-3 text-right">
+                            {row.resolved ? (
+                              <span className="text-xs text-gray-500">Resolved{row.retriedCustomerId ? ` → ${row.retriedCustomerId}` : ""}</span>
+                            ) : (
+                              <button type="button" onClick={() => handleRetryFailure(row.id)} disabled={retryingFailureId === row.id} className="px-3 py-1.5 bg-orange hover:bg-orange/90 disabled:opacity-50 text-white text-xs font-semibold rounded-lg cursor-pointer transition-colors">
+                                {retryingFailureId === row.id ? "…" : "Retry"}
+                              </button>
+                            )}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+          ) : (
           <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
             <div className="hidden md:block overflow-x-auto">
               <table className="w-full">
@@ -482,6 +689,7 @@ export default function DashboardPage() {
               ))}
             </div>
           </div>
+          )}
         </main>
       </div>
 
@@ -653,6 +861,124 @@ export default function DashboardPage() {
           >
             ×
           </button>
+        </div>
+      )}
+
+      {manualAddOpen && (
+        <div className="fixed inset-0 bg-black/50 z-[60] flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto">
+            <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex justify-between items-center z-10">
+              <h3 className="text-xl font-bold text-gray-900">
+                {manualAddKind === "potential" ? "Add lead" : "Add active customer"}
+              </h3>
+              <button
+                type="button"
+                onClick={() => setManualAddOpen(false)}
+                className="p-2 hover:bg-gray-100 rounded-lg text-gray-600 cursor-pointer transition-colors"
+                aria-label="Close"
+              >
+                ×
+              </button>
+            </div>
+            <form onSubmit={handleManualAddSubmit} className="p-6 space-y-4">
+              <div>
+                <label className="block text-sm font-semibold mb-2 text-gray-900">Full name *</label>
+                <input
+                  required
+                  value={manualAddForm.name}
+                  onChange={(e) => setManualAddForm({ ...manualAddForm, name: e.target.value })}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg text-gray-900 focus:ring-2 focus:ring-orange focus:border-transparent"
+                />
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-semibold mb-2 text-gray-900">Email *</label>
+                  <input
+                    type="email"
+                    required
+                    value={manualAddForm.email}
+                    onChange={(e) => setManualAddForm({ ...manualAddForm, email: e.target.value })}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg text-gray-900 focus:ring-2 focus:ring-orange focus:border-transparent"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold mb-2 text-gray-900">Phone *</label>
+                  <input
+                    type="tel"
+                    required
+                    value={manualAddForm.phone}
+                    onChange={(e) => setManualAddForm({ ...manualAddForm, phone: e.target.value })}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg text-gray-900 focus:ring-2 focus:ring-orange focus:border-transparent"
+                  />
+                </div>
+              </div>
+              <div>
+                <label className="block text-sm font-semibold mb-2 text-gray-900">Address *</label>
+                <input
+                  required
+                  value={manualAddForm.address}
+                  onChange={(e) => setManualAddForm({ ...manualAddForm, address: e.target.value })}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg text-gray-900 focus:ring-2 focus:ring-orange focus:border-transparent"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-semibold mb-2 text-gray-900">Service</label>
+                <input
+                  value={manualAddForm.service}
+                  onChange={(e) => setManualAddForm({ ...manualAddForm, service: e.target.value })}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg text-gray-900 focus:ring-2 focus:ring-orange focus:border-transparent"
+                />
+              </div>
+              {manualAddKind === "active" && (
+                <>
+                  <div>
+                    <label className="block text-sm font-semibold mb-2 text-gray-900">Last service date</label>
+                    <input
+                      type="date"
+                      value={manualAddForm.lastServiceDate}
+                      onChange={(e) => setManualAddForm({ ...manualAddForm, lastServiceDate: e.target.value })}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg text-gray-900 focus:ring-2 focus:ring-orange focus:border-transparent"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-semibold mb-2 text-gray-900">Service note</label>
+                    <textarea
+                      value={manualAddForm.serviceNote}
+                      onChange={(e) => setManualAddForm({ ...manualAddForm, serviceNote: e.target.value })}
+                      rows={2}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg text-gray-900 focus:ring-2 focus:ring-orange focus:border-transparent resize-none"
+                      placeholder="e.g. Added manually from phone call"
+                    />
+                  </div>
+                </>
+              )}
+              <div>
+                <label className="block text-sm font-semibold mb-2 text-gray-900">Notes</label>
+                <textarea
+                  value={manualAddForm.notes}
+                  onChange={(e) => setManualAddForm({ ...manualAddForm, notes: e.target.value })}
+                  rows={3}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg text-gray-900 focus:ring-2 focus:ring-orange focus:border-transparent resize-none"
+                />
+              </div>
+              <div className="flex gap-3 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setManualAddOpen(false)}
+                  className="flex-1 px-4 py-2.5 border border-gray-300 rounded-lg font-semibold text-gray-900 hover:bg-gray-50 cursor-pointer transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={manualAddSaving}
+                  className="flex-1 px-4 py-2.5 bg-orange hover:bg-orange/90 disabled:opacity-50 text-white font-semibold rounded-lg cursor-pointer transition-colors"
+                >
+                  {manualAddSaving ? "Saving…" : "Save"}
+                </button>
+              </div>
+            </form>
+          </div>
         </div>
       )}
 

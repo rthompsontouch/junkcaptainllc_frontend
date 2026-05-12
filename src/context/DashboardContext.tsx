@@ -54,12 +54,34 @@ export interface Notification {
   createdAt: string;
 }
 
+export interface QuoteFailureLogEntry {
+  id: string;
+  requestId: string;
+  name: string;
+  email: string;
+  phone: string;
+  address: string;
+  message: string;
+  imageUrls: string[];
+  httpStatus: number;
+  errorCode: string;
+  errorMessage: string;
+  stage: string;
+  potentialCustomerId?: string;
+  resolved: boolean;
+  resolvedAt?: string;
+  retriedCustomerId?: string;
+  createdAt: string;
+}
+
 interface DashboardState {
   potentialCustomers: PotentialCustomer[];
   activeCustomers: ActiveCustomer[];
   notifications: Notification[];
+  quoteFailures: QuoteFailureLogEntry[];
   loadingCustomers: boolean;
   loadingNotifications: boolean;
+  loadingQuoteFailures: boolean;
   error: string | null; // general or last error
 }
 
@@ -79,6 +101,18 @@ interface DashboardContextType extends DashboardState {
   addServiceRecord: (customerId: string | number, date: string, note: string) => Promise<ActiveCustomer | void>;
   fetchNotifications: () => Promise<void>;
   markNotificationRead: (id: string | number) => Promise<void>;
+  fetchQuoteFailures: (opts?: { unresolvedOnly?: boolean }) => Promise<void>;
+  retryQuoteFailure: (failureId: string) => Promise<void>;
+  createActiveCustomer: (data: {
+    name: string;
+    email: string;
+    phone: string;
+    address: string;
+    service?: string;
+    notes?: string;
+    lastServiceDate?: string;
+    serviceNote?: string;
+  }) => Promise<void>;
 }
 
 const DashboardContext = createContext<DashboardContextType | undefined>(undefined);
@@ -95,8 +129,10 @@ export const DashboardProvider = ({ children }: DashboardProviderProps) => {
     potentialCustomers: [],
     activeCustomers: [],
     notifications: [],
+    quoteFailures: [],
     loadingCustomers: false,
     loadingNotifications: false,
+    loadingQuoteFailures: false,
     error: null,
   });
 
@@ -387,6 +423,108 @@ export const DashboardProvider = ({ children }: DashboardProviderProps) => {
     }
   };
 
+  const fetchQuoteFailures = useCallback(
+    async (opts?: { unresolvedOnly?: boolean }) => {
+      if (!token) return;
+
+      setState((prev) => ({ ...prev, loadingQuoteFailures: true, error: null }));
+
+      try {
+        const q = opts?.unresolvedOnly ? "?unresolved=1" : "";
+        const res = await fetch(`/api/quote-failures${q}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+
+        if (!res.ok) {
+          if (res.status === 401) {
+            logout();
+            router.replace("/login");
+            return;
+          }
+          throw new Error("Failed to load quote failure logs");
+        }
+
+        const data = (await res.json()) as QuoteFailureLogEntry[];
+        setState((prev) => ({
+          ...prev,
+          quoteFailures: data,
+          loadingQuoteFailures: false,
+        }));
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : "Unknown error";
+        setState((prev) => ({
+          ...prev,
+          loadingQuoteFailures: false,
+          error: `Quote logs: ${msg}`,
+        }));
+        console.error("Fetch quote failures failed:", err);
+      }
+    },
+    [token, logout, router]
+  );
+
+  const retryQuoteFailure = async (failureId: string) => {
+    if (!token) throw new Error("Not authenticated");
+
+    const res = await fetch("/api/quote-failures/retry", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ failureId }),
+    });
+
+    if (!res.ok) {
+      if (res.status === 401) {
+        logout();
+        router.replace("/login");
+        return;
+      }
+      const errBody = await res.json().catch(() => ({}));
+      const message = typeof errBody.error === "string" ? errBody.error : "Retry failed";
+      throw new Error(message);
+    }
+
+    await fetchCustomers();
+    await fetchQuoteFailures({ unresolvedOnly: false });
+  };
+
+  const createActiveCustomer = async (data: {
+    name: string;
+    email: string;
+    phone: string;
+    address: string;
+    service?: string;
+    notes?: string;
+    lastServiceDate?: string;
+    serviceNote?: string;
+  }) => {
+    if (!token) throw new Error("Not authenticated");
+
+    const res = await fetch("/api/customers", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ type: "active", ...data }),
+    });
+
+    if (!res.ok) {
+      if (res.status === 401) {
+        logout();
+        router.replace("/login");
+        return;
+      }
+      const errBody = await res.json().catch(() => ({}));
+      const message = typeof errBody.error === "string" ? errBody.error : "Failed to create customer";
+      throw new Error(message);
+    }
+
+    await fetchCustomers();
+  };
+
   const markNotificationRead = async (id: string | number) => {
     if (!token) throw new Error("Not authenticated");
 
@@ -431,6 +569,9 @@ export const DashboardProvider = ({ children }: DashboardProviderProps) => {
     addServiceRecord,
     fetchNotifications,
     markNotificationRead,
+    fetchQuoteFailures,
+    retryQuoteFailure,
+    createActiveCustomer,
   };
 
   return (
